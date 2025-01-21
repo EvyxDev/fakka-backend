@@ -2,6 +2,8 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\User\PinController;
+use App\Http\Controllers\Api\User\AuthController;
 
 /*
 |--------------------------------------------------------------------------
@@ -16,4 +18,19 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
+});
+
+
+Route::post('register', [AuthController::class, 'register']);
+Route::post('login', [AuthController::class, 'login']);
+Route::post('verify-otp', [AuthController::class, 'verifyOtp']);
+Route::post('resend-otp', [AuthController::class, 'resendOtp']);
+Route::post('logout', [AuthController::class, 'logout']);
+Route::post('reset-password', [AuthController::class, 'resetPassword']);
+Route::post('change-password',[AuthController::class, 'changePassword']);
+Route::post('forget-password', [AuthController::class, 'forgotPassword']);
+
+Route::prefix('pin')->group(function () {
+    Route::post('set-pin', [PinController::class, 'setpinCode']);
+    Route::post('changePinCode' , [PinController::class, 'changePinCode']);
 });
