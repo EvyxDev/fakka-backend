@@ -17,7 +17,9 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('phone');
-            $table->string('pincode');
+            $table->string('pincode')->nullable();
+            $table->string('profile_image')->nullable();
+            $table->timestamp('phone_verified_at')->nullable();
             $table->unsignedBigInteger('business_id')->nullable();
             $table->foreign('business_id')->references('id')->on('businesses')->onDelete('set null');
             $table->string('password');

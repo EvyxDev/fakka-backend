@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\User\PinController;
 use App\Http\Controllers\Api\User\AuthController;
+use App\Http\Controllers\Api\Vendor\AuthController as VendorAuthController;
 
 /*
 |--------------------------------------------------------------------------
@@ -33,4 +34,11 @@ Route::post('forget-password', [AuthController::class, 'forgotPassword']);
 Route::prefix('pin')->group(function () {
     Route::post('set-pin', [PinController::class, 'setpinCode']);
     Route::post('changePinCode' , [PinController::class, 'changePinCode']);
+});
+
+
+Route::prefix('vendor')->group(function () {
+    Route::post('register', [VendorAuthController::class, 'register']);
+    Route::post('verify-otp', [VendorAuthController::class, 'verifyOtp']);
+    Route::post('login', [VendorAuthController::class, 'login']);
 });
