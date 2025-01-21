@@ -36,24 +36,30 @@ class AuthController extends Controller
             'password' => 'required|string|min:6|confirmed',
             'profile_image' => 'nullable|file|image|mimes:jpeg,png,jpg,gif,svg|max:2048',          
         ]);
+
         if ($validator->fails()) {
-            return $this->errorResponse(422, __('words.bad_request'), $validator->errors());
+            return $this->errorResponse(422, __('validation.errors'), $validator->errors());
         }
+
         $user = User::create([
             'username' => $request->username,
             'phone' => $request->phone,
             'password' => Hash::make($request->password),
         ]);
+
         if ($request->hasFile('profile_image')) {
             $imagePath = uploadImage($request->file('profile_image'), 'user/profile_image');
             $user->profile_image = $imagePath;
             $user->save();
         }
+
         $otpService = new Otp();
         $phone = $user->phone;
         $otpService->generate($phone, 'numeric', 4, 10);
-        return $this->successResponse(200, __('messages.otp_sent_successfully_to_your_phone'));
+
+        return $this->successResponse(201, __('auth.otp_sent'), ['phone' => $phone]);
     }
+
     // Login user
     public function login(Request $request)
     {
@@ -62,26 +68,33 @@ class AuthController extends Controller
             'phone' => 'required|string',
             'password' => 'required|string',
         ]);
+
         if ($validator->fails()) {
-            return $this->errorResponse(422, __('words.bad_request'), $validator->errors());
+            return $this->errorResponse(422, __('validation.errors'), $validator->errors());
         }
+
         $credentials = $request->only('phone', 'password');
+
         if (!Auth::attempt($credentials)) {
-            return $this->errorResponse(401, __('messages.invalid_credentials'));
+            return $this->errorResponse(401, __('auth.invalid_credentials'));
         }
+
         $user = Auth::user();
         $token = JWTAuth::fromUser($user);
-        return $this->successResponse(200, __('messages.login_success'), [
+
+        return $this->successResponse(200, __('auth.login_success'), [
             'token' => $token,
             'user' => new UserResource($user),
         ]);
     }
+
     // Logout user
     public function logout()
     {
         Auth::logout();
-        return $this->successResponse(200, __('messages.logout_success'));
+        return $this->successResponse(200, __('auth.logout_success'));
     }
+
     // Verify OTP
     public function verifyOtp(Request $request)
     {
@@ -90,25 +103,31 @@ class AuthController extends Controller
             'phone' => 'required|string',
             'otp' => 'required|string',
         ]);
+
         if ($validator->fails()) {
-            return $this->errorResponse(422, __('words.bad_request'), $validator->errors());
+            return $this->errorResponse(422, __('validation.errors'), $validator->errors());
         }
+
         $otpService = new Otp();
         $phone = $request->phone;
         $otp = $request->otp;
         $response = $otpService->validate($phone, $otp);
+
         if ($response->status) {
             $user = User::where('phone', $phone)->first();
             $user->phone_verified_at = Carbon::now();
             $token = JWTAuth::fromUser($user);
             $user->save();
-            return $this->successResponse(200, __('messages.otp_verified_successfully'), [
+
+            return $this->successResponse(200, __('auth.otp_verified'), [
                 'token' => $token,
                 'user' => new UserResource($user),
             ]);
         }
-        return $this->errorResponse(400, __('messages.invalid_otp'));
+
+        return $this->errorResponse(400, __('auth.invalid_otp'));
     }
+
     // Resend OTP
     public function resendOtp(Request $request)
     {
@@ -116,28 +135,36 @@ class AuthController extends Controller
         $validator = Validator::make($request->all(), [
             'phone' => 'required|string',
         ]);
+
         if ($validator->fails()) {
-            return $this->errorResponse(422, __('words.bad_request'), $validator->errors());
+            return $this->errorResponse(422, __('validation.errors'), $validator->errors());
         }
+
         $otpService = new Otp();
         $phone = $request->phone;
         $otpService->generate($phone, 'numeric', 4, 10);
-        return $this->successResponse(200, __('messages.otp_sent_successfully_to_your_phone'));
+
+        return $this->successResponse(200, __('auth.otp_sent'), ['phone' => $phone]);
     }
+
     // Forgot password
     public function forgotPassword(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'phone' => 'required|string|exists:users,phone',
         ]);
+
         if ($validator->fails()) {
-            return $this->errorResponse(422, __('words.bad_request'), $validator->errors());
+            return $this->errorResponse(422, __('validation.errors'), $validator->errors());
         }
+
         $otpService = new Otp();
         $phone = $request->phone;
         $otpService->generate($phone, 'numeric', 4, 10);
-        return $this->successResponse(200, __('messages.otp_sent_successfully_to_your_phone'));
+
+        return $this->successResponse(200, __('auth.otp_sent'), ['phone' => $phone]);
     }
+
     // Reset password
     public function resetPassword(Request $request)
     {
@@ -145,18 +172,24 @@ class AuthController extends Controller
             'phone' => 'required|string',
             'password' => 'required|string|min:6|confirmed',
         ]);
+
         if ($validator->fails()) {
-            return $this->errorResponse(422, __('words.bad_request'), $validator->errors());
+            return $this->errorResponse(422, __('validation.errors'), $validator->errors());
         }
+
         $phone = $request->phone;
-        if ($phone) {
-            $user = User::where('phone', $phone)->first();
-            $user->password = Hash::make($request->password);
-            $user->save();
-            return $this->successResponse(200, __('messages.password_reset_success'));
+        $user = User::where('phone', $phone)->first();
+
+        if (!$user) {
+            return $this->errorResponse(404, __('auth.user_not_found'));
         }
-        return $this->errorResponse(400, __('messages.invalid_otp'));
+
+        $user->password = Hash::make($request->password);
+        $user->save();
+
+        return $this->successResponse(200, __('auth.password_reset_success'));
     }
+
     // Change password
     public function changePassword(Request $request)
     {
@@ -164,21 +197,28 @@ class AuthController extends Controller
             'old_password' => 'required|string',
             'new_password' => 'required|string|min:6|confirmed',
         ]);
+
         if ($validator->fails()) {
-            return $this->errorResponse(422, __('words.bad_request'), $validator->errors());
+            return $this->errorResponse(422, __('validation.errors'), $validator->errors());
         }
+
         $user = Auth::user();
-        if(!$user){
-            return $this->errorResponse(400, __('messages.user_not_found'));
+
+        if (!$user) {
+            return $this->errorResponse(404, __('auth.user_not_found'));
         }
+
         if (!Hash::check($request->old_password, $user->password)) {
-            return $this->errorResponse(400, __('messages.invalid_old_password'));
+            return $this->errorResponse(400, __('auth.invalid_old_password'));
         }
+
         if (Hash::check($request->new_password, $user->password)) {
-            return $this->errorResponse(400, __('messages.new_password_must_be_different'));
+            return $this->errorResponse(400, __('auth.new_password_must_be_different'));
         }
+
         $user->password = Hash::make($request->new_password);
         $user->save();
-        return $this->successResponse(200, __('messages.password_changed_success'));
+
+        return $this->successResponse(200, __('auth.password_changed_success'));
     }
 }
