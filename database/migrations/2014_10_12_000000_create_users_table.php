@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('phone')->unique();
             $table->timestamp('phone_verified_at')->nullable();
             $table->string('status')->default('active');
-            $table->string('proflie_image')->nullable();
+            $table->string('profile_image')->nullable();
             $table->string('pincode');
             $table->string('password');
             $table->rememberToken();

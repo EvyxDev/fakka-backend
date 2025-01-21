@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\User\PinController;
 use App\Http\Controllers\Api\User\AuthController;
 use App\Http\Controllers\Api\Vendor\AuthController as VendorAuthController;
+use App\Models\Vendor;
 
 /*
 |--------------------------------------------------------------------------
@@ -41,4 +42,8 @@ Route::prefix('vendor')->group(function () {
     Route::post('register', [VendorAuthController::class, 'register']);
     Route::post('verify-otp', [VendorAuthController::class, 'verifyOtp']);
     Route::post('login', [VendorAuthController::class, 'login']);
+    Route::post('logout',[VendorAuthController::class, 'logout']);
+    Route::post('forgot-password', [VendorAuthController::class, 'forgotPassword']);
+    Route::post('reset-password', [VendorAuthController::class, 'resetPassword']);
+    Route::post('change-password',[VendorAuthController::class, 'changePassword']);
 });
