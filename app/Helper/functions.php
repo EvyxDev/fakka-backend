@@ -2,16 +2,13 @@
 
 use Illuminate\Support\Facades\File;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 
-function uploadImage(Request $request, $fieldName, $directory = 'images')
+function uploadImage(UploadedFile $file, $directory = 'images', $fieldName = null)
 {
-    if ($request->hasFile($fieldName)) {
-        $image = $request->file($fieldName);
-        $imageName = time() . '_' . $image->getClientOriginalName();
-        $image->move(public_path($directory), $imageName);
-        return $directory . '/' . $imageName;
-    }
-    return null;
+    $imageName = time() . '_' . $file->getClientOriginalName();
+    $file->move(public_path($directory), $imageName);
+    return $directory . '/' . $imageName;
 }
 
 function uploadImages(Request $request, $fieldName, $directory = 'images')

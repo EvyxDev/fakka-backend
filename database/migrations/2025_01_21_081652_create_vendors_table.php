@@ -23,6 +23,7 @@ return new class extends Migration
             $table->unsignedBigInteger('business_id')->nullable();
             $table->foreign('business_id')->references('id')->on('businesses')->onDelete('set null');
             $table->string('password');
+            $table->string('status')->default('active');
             $table->timestamps();
         });
     }

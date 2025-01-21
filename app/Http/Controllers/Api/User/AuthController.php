@@ -43,13 +43,12 @@ class AuthController extends Controller
             'username' => $request->username,
             'phone' => $request->phone,
             'password' => Hash::make($request->password),
-            'pincode' => rand(1000, 9999),
         ]);
-        // if ($request->hasFile('profile_image')) {
-        //     $imagePath = uploadImage($request->profile_image, 'profile_image', 'images/user');
-        //     $user->profile_image = $imagePath;
-        //     $user->save();
-        // }
+        if ($request->hasFile('profile_image')) {
+            $imagePath = uploadImage($request->file('profile_image'), 'user/profile_image');
+            $user->profile_image = $imagePath;
+            $user->save();
+        }
         $otpService = new Otp();
         $phone = $user->phone;
         $otpService->generate($phone, 'numeric', 4, 10);
