@@ -75,6 +75,12 @@ class AuthController extends Controller
 
         $credentials = $request->only('phone', 'password');
 
+        $user = User::where('phone', $request->phone)->first();
+
+        if ($user->phone_verified_at == null) {
+            return $this->errorResponse(401, __('auth.phone_not_verified'));
+        }
+        
         if (!Auth::attempt($credentials)) {
             return $this->errorResponse(401, __('auth.invalid_credentials'));
         }

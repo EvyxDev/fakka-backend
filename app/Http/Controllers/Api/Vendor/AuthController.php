@@ -95,6 +95,11 @@ class AuthController extends Controller
             'password' => 'required|string',
         ]);
 
+        $vendor = Vendor::where('phone', $request->phone)->first();
+        if ($vendor->phone_verified_at == null) {
+            return $this->errorResponse(401, __('auth.phone_not_verified'));
+        }
+        
         if ($validator->fails()) {
             return $this->errorResponse(422, __('validation.errors'), $validator->errors());
         }
