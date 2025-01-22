@@ -20,11 +20,24 @@ class Vendor extends Authenticatable implements JWTSubject
         'pincode',
         'password',
         'user_id',
+        'balance',
     ];
+
+    public function qrCodes()
+    {
+        return $this->hasMany(QrCode::class);
+    }
+
+    // A vendor can be involved in many transactions
+    public function transactions()
+    {
+        return $this->morphMany(Transaction::class, 'sender');
+    }
     public function businesses()
     {
         return $this->belongsTo(Business::class);
     }
+
     protected $hidden = [
         'password',
         'remember_token',
@@ -33,12 +46,6 @@ class Vendor extends Authenticatable implements JWTSubject
     {
         return $this->getKey();
     }
-
-    /**
-     * Return a key value array, containing any custom claims to be added to the JWT.
-     *
-     * @return array
-     */
     public function getJWTCustomClaims()
     {
         return [];

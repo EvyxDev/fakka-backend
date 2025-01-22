@@ -27,7 +27,7 @@ class AuthController extends Controller
     {
     }
     // Register new user
-    public function register(Request $request)
+    public function UserRegister(Request $request)
     {
         // Validate user input
         $validator = Validator::make($request->all(), [
@@ -61,7 +61,7 @@ class AuthController extends Controller
     }
 
     // Login user
-    public function login(Request $request)
+    public function UserLogin(Request $request)
     {
         // Validate user input
         $validator = Validator::make($request->all(), [
@@ -89,14 +89,14 @@ class AuthController extends Controller
     }
 
     // Logout user
-    public function logout()
+    public function UserLogout()
     {
         Auth::logout();
         return $this->successResponse(200, __('auth.logout_success'));
     }
 
     // Verify OTP
-    public function verifyOtp(Request $request)
+    public function UserVerifyOtp(Request $request)
     {
         // Validate user input
         $validator = Validator::make($request->all(), [
@@ -129,7 +129,7 @@ class AuthController extends Controller
     }
 
     // Resend OTP
-    public function resendOtp(Request $request)
+    public function UserResendOtp(Request $request)
     {
         // Validate user input
         $validator = Validator::make($request->all(), [
@@ -148,7 +148,7 @@ class AuthController extends Controller
     }
 
     // Forgot password
-    public function forgotPassword(Request $request)
+    public function UserForgotPassword(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'phone' => 'required|string|exists:users,phone',
@@ -166,7 +166,7 @@ class AuthController extends Controller
     }
 
     // Reset password
-    public function resetPassword(Request $request)
+    public function UserResetPassword(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'phone' => 'required|string',
@@ -191,7 +191,7 @@ class AuthController extends Controller
     }
 
     // Change password
-    public function changePassword(Request $request)
+    public function UserChangePassword(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'old_password' => 'required|string',

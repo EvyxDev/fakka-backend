@@ -26,7 +26,19 @@ class User extends Authenticatable implements JWTSubject
         'profile_image',
         'pincode',
         'password',
+        'balance',
     ];
+
+    public function qrCodes()
+    {
+        return $this->hasMany(QrCode::class);
+    }
+
+    // A user can be involved in many transactions
+    public function transactions()
+    {
+        return $this->morphMany(Transaction::class, 'sender');
+    }
 
     /**
      * The attributes that should be hidden for serialization.

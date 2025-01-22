@@ -12,7 +12,7 @@ class PinController extends Controller
     use ApiResponse;
 
     // Set PIN code
-    public function setPinCode(Request $request)
+    public function UserSetPinCode(Request $request)
     {
         $request->validate([
             'pin_code' => 'required|string|min:6',
@@ -31,12 +31,16 @@ class PinController extends Controller
     }
 
     // Change PIN code by verifying old PIN code
-    public function changePinCode(Request $request)
+    public function UserChangePinCode(Request $request)
     {
-        $request->validate([
-            'old_pin_code' => 'required|string|min:6',
-            'new_pin_code' => 'required|string|min:6|confirmed',
-        ]);
+        try{
+            $request->validate([
+                'old_pin_code' => 'required|string|min:6',
+                'new_pin_code' => 'required|string|min:6|confirmed',
+            ]);
+        }catch(\Exception $e){
+            return $this->errorResponse(400, $e->getMessage());
+        }
 
         $user = auth()->user();
 

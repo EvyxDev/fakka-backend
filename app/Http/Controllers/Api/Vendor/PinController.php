@@ -14,7 +14,7 @@ class PinController extends Controller
 
     //set bin code
 
-    public function setpinCode(Request $request)
+    public function VendorSetpinCode(Request $request)
     {
         $request->validate([
             'pin_code' => 'required|string|min:6',
@@ -29,7 +29,7 @@ class PinController extends Controller
     }
     //change pin code by verifying old pin code
 
-    public function changePinCode(Request $request)
+    public function VendorChangePinCode(Request $request)
     {
         $request->validate([
             'old_pin_code' => 'required|string|min:6',

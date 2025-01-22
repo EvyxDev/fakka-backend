@@ -19,7 +19,7 @@ class AuthController extends Controller
     use ApiResponse;
 
     // Register vendor
-    public function register(Request $request)
+    public function VendorRegister(Request $request)
     {
         // Validate user input
         $validator = Validator::make($request->all(), [
@@ -55,7 +55,7 @@ class AuthController extends Controller
     }
 
     // Verify OTP
-    public function verifyOtp(Request $request)
+    public function VendorVerifyOtp(Request $request)
     {
         // Validate user input
         $validator = Validator::make($request->all(), [
@@ -88,7 +88,7 @@ class AuthController extends Controller
     }
 
     // Login vendor
-    public function login(Request $request)
+    public function VendorLogin(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'phone' => 'required|string',
@@ -115,15 +115,15 @@ class AuthController extends Controller
     }
 
     // Logout vendor
-    public function logout(Request $request)
+    public function VendorLogout(Request $request)
     {
         Auth::guard('vendor')->logout();
-
+        
         return $this->successResponse(200, __('auth.logout_success'));
     }
 
     // Resend OTP
-    public function resendOtp(Request $request)
+    public function VendorResendOtp(Request $request)
     {
         // Validate user input
         $validator = Validator::make($request->all(), [
@@ -142,7 +142,7 @@ class AuthController extends Controller
     }
 
     // Forgot password
-    public function forgotPassword(Request $request)
+    public function VendorForgotPassword(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'phone' => 'required|string|exists:vendors,phone',
@@ -166,7 +166,7 @@ class AuthController extends Controller
     }
 
     // Reset password
-    public function resetPassword(Request $request)
+    public function VendorResetPassword(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'phone' => 'required|string',
@@ -190,7 +190,7 @@ class AuthController extends Controller
     }
 
     // Change password
-    public function changePassword(Request $request)
+    public function VendorChangePassword(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'old_password' => 'required|string|min:6',

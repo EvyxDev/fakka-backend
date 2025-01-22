@@ -1,13 +1,13 @@
 <?php
 
+use App\Models\Vendor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\Transaction\TransactionController;
 use App\Http\Controllers\Api\User\PinController as UserPinController;
 use App\Http\Controllers\Api\User\AuthController as UserAuthController;
+use App\Http\Controllers\Api\Vendor\PinController as VendorPinController;
 use App\Http\Controllers\Api\Vendor\AuthController as VendorAuthController;
-use App\Http\Controllers\Api\User\PinController as VendorPinController;
-
-use App\Models\Vendor;
 
 /*
 |--------------------------------------------------------------------------
@@ -26,29 +26,34 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::prefix('user')->group(function () {
 
-    Route::post('register', [UserAuthController::class, 'register']);
-    Route::post('login', [UserAuthController::class, 'login']);
-    Route::post('verify-otp', [UserAuthController::class, 'verifyOtp']);
-    Route::post('resend-otp', [UserAuthController::class, 'resendOtp']);
-    Route::post('logout', [UserAuthController::class, 'logout']);
-    Route::post('reset-password', [UserAuthController::class, 'resetPassword']);
-    Route::post('change-password',[UserAuthController::class, 'changePassword']);
-    Route::post('forget-password', [UserAuthController::class, 'forgotPassword']);
-    Route::post('set-pin', [UserPinController::class, 'setpinCode']);
-    Route::post('changePinCode' , [UserPinController::class, 'changePinCode']);
+    Route::post('register', [UserAuthController::class, 'UserRegister']);
+    Route::post('login', [UserAuthController::class, 'UserLogin']);
+    Route::post('verify-otp', [UserAuthController::class, 'UserVerifyOtp']);
+    Route::post('resend-otp', [UserAuthController::class, 'UserResendOtp']);
+    Route::post('logout', [UserAuthController::class, 'UserLogout']);
+    Route::post('reset-password', [UserAuthController::class, 'UserResetPassword']);
+    Route::post('change-password',[UserAuthController::class, 'UserChangePassword']);
+    Route::post('forget-password', [UserAuthController::class, 'UserForgotPassword']);
+    Route::post('set-pin', [UserPinController::class, 'UserSetpinCode']);
+    Route::post('changePinCode' , [UserPinController::class, 'UserChangePinCode']);
 });
 
 
 Route::prefix('vendor')->group(function () {
-    Route::post('register', [VendorAuthController::class, 'register']);
-    Route::post('login', [VendorAuthController::class, 'login']);
-    Route::post('verify-otp', [VendorAuthController::class, 'verifyOtp']);
-    Route::post('resend-otp', [VendorAuthController::class, 'resendOtp']);
-    Route::post('logout',[VendorAuthController::class, 'logout']);
-    Route::post('reset-password', [VendorAuthController::class, 'resetPassword']);
-    Route::post('change-password',[VendorAuthController::class, 'changePassword']);
-    Route::post('forgot-password', [VendorAuthController::class, 'forgotPassword']);
-    Route::post('set-pin', [VendorPinController::class, 'setpinCode']);
-    Route::post('changePinCode' , [VendorPinController::class, 'changePinCode']);
-    
+    Route::post('register', [VendorAuthController::class, 'VendorRegister']);
+    Route::post('login', [VendorAuthController::class, 'VendorLogin']);
+    Route::post('verify-otp', [VendorAuthController::class, 'VendorVerifyOtp']);
+    Route::post('resend-otp', [VendorAuthController::class, 'VendorResendOtp']);
+    Route::post('logout',[VendorAuthController::class, 'VendorLogout']);
+    Route::post('reset-password', [VendorAuthController::class, 'VendorResetPassword']);
+    Route::post('change-password',[VendorAuthController::class, 'VendorChangePassword']);
+    Route::post('forgot-password', [VendorAuthController::class, 'VendorForgotPassword']);
+    Route::post('set-pin', [VendorPinController::class, 'VendorSetpinCode']);
+    Route::post('changePinCode' , [VendorPinController::class, 'VendorChangePinCode']);
+});
+
+Route::prefix('Transaction')->group(function () {
+    Route::post('generateQrCode', [TransactionController::class, 'generateQrCode']);
+    Route::post('scanQrCode', [TransactionController::class, 'scanQrCode']);
+    Route::get('transactionHistory', [TransactionController::class, 'transactionHistory']);
 });
