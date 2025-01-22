@@ -31,7 +31,7 @@ class AuthController extends Controller
     {
         // Validate user input
         $validator = Validator::make($request->all(), [
-            'username' => 'required|string',
+            'name' => 'required|string',
             'phone' => 'required|string|unique:users,phone',
             'password' => 'required|string|min:6|confirmed',
             'profile_image' => 'nullable|file|image|mimes:jpeg,png,jpg,gif,svg|max:2048',          
@@ -42,7 +42,7 @@ class AuthController extends Controller
         }
 
         $user = User::create([
-            'username' => $request->username,
+            'name' => $request->name,
             'phone' => $request->phone,
             'password' => Hash::make($request->password),
         ]);

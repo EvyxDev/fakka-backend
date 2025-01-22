@@ -57,3 +57,4 @@ Route::prefix('Transaction')->group(function () {
     Route::post('scanQrCode', [TransactionController::class, 'scanQrCode']);
     Route::get('transactionHistory', [TransactionController::class, 'transactionHistory']);
 });
+Route::get('notifications', [TransactionController::class, 'getNotifications']);
