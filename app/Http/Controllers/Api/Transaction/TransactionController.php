@@ -96,9 +96,21 @@ class TransactionController extends Controller
             return $this->errorResponse(400, 'Insufficient balance');
         }
     
+        if ($sender instanceof User && $receiver instanceof User) {
+            return $this->errorResponse(400, 'A user cannot send money to another user');
+        }
+    
+        if ($sender instanceof Vendor && $receiver instanceof Vendor) {
+            return $this->errorResponse(400, 'A vendor cannot send money to another vendor');
+        }
+    
         DB::beginTransaction();
         try {
-            $feeAmount = $qrCodeData->amount * 0.10;
+            $feeAmount = 0; 
+            if ($sender instanceof Vendor) {
+                $feeAmount = $qrCodeData->amount * 0.10;
+            }
+    
             $transactionAmount = $qrCodeData->amount - $feeAmount;
     
             $sender->balance -= $qrCodeData->amount;
@@ -116,10 +128,12 @@ class TransactionController extends Controller
                 'status' => 'completed',
             ]);
     
-            Fee::create([
-                'transaction_id' => $transaction->id,
-                'amount' => $feeAmount,
-            ]);
+            if ($feeAmount > 0) {
+                Fee::create([
+                    'transaction_id' => $transaction->id,
+                    'amount' => $feeAmount,
+                ]);
+            }
     
             $qrCodeData->status = 'used';
             $qrCodeData->save();

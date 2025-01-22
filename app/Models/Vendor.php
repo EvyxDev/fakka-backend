@@ -8,6 +8,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Tymon\JWTAuth\Contracts\JWTSubject;
+use Carbon\Carbon;
 
 class Vendor extends Authenticatable implements JWTSubject
 {
@@ -49,6 +50,15 @@ class Vendor extends Authenticatable implements JWTSubject
     public function getJWTCustomClaims()
     {
         return [];
+    }
+    public function getCreatedAtAttribute($value)
+    {
+        return Carbon::parse($value)->format('d M Y, h:i A'); 
+    }
+        
+    public function getUpdatedAtAttribute($value)
+    {
+        return Carbon::parse($value)->format('d M Y, h:i A'); 
     }
 
 }

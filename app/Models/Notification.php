@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
 
 class Notification extends Model
 {
@@ -20,5 +21,14 @@ class Notification extends Model
     public function vendor()
     {
         return $this->belongsTo(Vendor::class);
+    }
+    public function getCreatedAtAttribute($value)
+    {
+        return Carbon::parse($value)->format('d M Y, h:i A'); 
+    }
+        
+    public function getUpdatedAtAttribute($value)
+    {
+        return Carbon::parse($value)->format('d M Y, h:i A'); 
     }
 }
