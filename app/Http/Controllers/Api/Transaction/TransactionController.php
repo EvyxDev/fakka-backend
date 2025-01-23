@@ -15,8 +15,8 @@ use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
-use App\Http\Resources\API\UserResource;
-use App\Http\Resources\API\VendorResource;
+use App\Http\Resources\Api\UserResource;
+use App\Http\Resources\Api\VendorResource;
 
 class TransactionController extends Controller
 {

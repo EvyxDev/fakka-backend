@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api\Vendor;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\Http\Resources\API\VendorResource;
+use App\Http\Resources\Api\VendorResource;
 use Illuminate\Support\Facades\Auth;
 
 class PinController extends Controller
