@@ -27,7 +27,7 @@ class AuthController extends Controller
             'phone' => 'required|string|unique:vendors,phone',
             'password' => 'required|string|min:6|confirmed',
             'profile_image' => 'nullable|file|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            'business_id' => 'required|integer|exists:businesses,id',
+            // 'business_id' => 'required|integer|exists:businesses,id',
         ]);
 
         if ($validator->fails()) {
@@ -39,8 +39,8 @@ class AuthController extends Controller
             'phone' => $request->phone,
             'password' => Hash::make($request->password),
             'phonecode'=>$request->phonecode,
-            'business_id' => $request->business_id,
-        ]);
+            // 'business_id' => $request->business_id,
+        ]); 
 
         if ($request->hasFile('profile_image')) {
             $imagePath = uploadImage($request->file('profile_image'), 'vendor/profile_image');
