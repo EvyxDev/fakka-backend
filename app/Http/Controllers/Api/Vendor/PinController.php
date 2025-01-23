@@ -21,13 +21,12 @@ class PinController extends Controller
         ]);
         $vendor = Auth::guard('vendor')->user();
         if(!$vendor){
-            return $this->errorResponse(400, 'vendor not found');
+            return $this->errorResponse(404, __('auth.vendor_not_found'));
         }
         $vendor->pincode = request('pin_code');
         $vendor->save();
-        return $this->successResponse(200, 'Bin code set successfully', new VendorResource($vendor));
+        return $this->successResponse(201, __('auth.pin_set_success'), new VendorResource($vendor));
     }
-    //change pin code by verifying old pin code
 
     public function VendorChangePinCode(Request $request)
     {
@@ -37,16 +36,16 @@ class PinController extends Controller
         ]);
         $vendor = Auth::guard('vendor')->user();
         if(!$vendor){
-            return $this->errorResponse(400, 'vendor not found');
+            return $this->errorResponse(404, __('auth.vendor_not_found'));
         }
         if ($vendor->pincode != request('old_pin_code')) {
-            return $this->errorResponse(400, 'Old pin code is incorrect');
+            return $this->errorResponse(400, __('auth.incorrect_old_pin'));
         }
         if (request('old_pin_code') == request('new_pin_code')) {
-            return $this->errorResponse(400, 'New pin code must be different from old pin code');
+            return $this->errorResponse(400, __('auth.incorrect_old_pin'));
         }
         $vendor->pincode = request('new_pin_code');
         $vendor->save();
-        return $this->successResponse(200, 'Pin code changed successfully', new VendorResource($vendor));
+        return $this->successResponse(200, __('auth.pin_changed_success'), new VendorResource($vendor));
     }
 }

@@ -251,7 +251,7 @@ class AuthController extends Controller
         }
 
         if (Hash::check($request->new_password, $vendor->password)) {
-            return $this->errorResponse(400, __('auth.new_password_must_differ'));
+            return $this->errorResponse(400, __('auth.new_password_must_be_different'));
         }
 
         $vendor->password = Hash::make($request->new_password);
