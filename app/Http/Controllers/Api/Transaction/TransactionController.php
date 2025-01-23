@@ -48,7 +48,7 @@ class TransactionController extends Controller
                 'qr_code' => $qrCode,
                 'amount' => $amount,
             ]);
-            return $this->successResponse(200, ('word.qr_code_generated_successfully'), [
+            return $this->successResponse(200, __('word.qr_code_generated_successfully'), [
                 'Qr Code' => $Table,
             ]);
         } catch (\Exception $e) {
@@ -60,22 +60,22 @@ class TransactionController extends Controller
         $validator = Validator::make($request->all(), [
             'qr_code' => 'required|string',
         ]);
-    
+
         if ($validator->fails()) {
             return $this->errorResponse(422, 'Validation errors', $validator->errors());
         }
-    
+
         $qrCode = $request->input('qr_code');
         $qrCodeData = QrCode::where('qr_code', $qrCode)->first();
-    
+
         if (!$qrCodeData) {
             return $this->errorResponse(400, __('word.qr_code_not_found'));
         }
-    
+
         if ($qrCodeData->status !== 'active') {
             return $this->errorResponse(400, __('word.qr_code_already_used'));
         }
-    
+
         if (auth()->guard('vendor')->check()) {
             $receiver = auth()->guard('vendor')->user();
         } elseif (auth()->guard('user')->check()) {
@@ -83,44 +83,44 @@ class TransactionController extends Controller
         } else {
             return $this->errorResponse(400, __('word.you_are_not_authorized_to_perform_this_action'));
         }
-    
+
         if ($qrCodeData->user_id) {
             $sender = User::find($qrCodeData->user_id);
         } else {
             $sender = Vendor::find($qrCodeData->vendor_id);
         }
-    
+
         if (!$sender) {
             return $this->errorResponse(400, __('word.sender_not_found'));
         }
-    
+
         if ($sender->balance < $qrCodeData->amount) {
             return $this->errorResponse(400, __('word.insufficient_balance'));
         }
-    
+
         if ($sender instanceof User && $receiver instanceof User) {
             return $this->errorResponse(400, __('word.a_user_cannot_send_money_to_another_user'));
         }
-    
+
         if ($sender instanceof Vendor && $receiver instanceof Vendor) {
             return $this->errorResponse(400, __('word.a_vendor_cannot_send_money_to_another_vendor'));
         }
-    
+
         DB::beginTransaction();
         try {
-            $feeAmount = 0; 
+            $feeAmount = 0;
             if ($sender instanceof Vendor) {
                 $feeAmount = $qrCodeData->amount * 0.10;
             }
-    
+
             $transactionAmount = $qrCodeData->amount - $feeAmount;
-    
+
             $sender->balance -= $qrCodeData->amount;
             $sender->save();
-    
+
             $receiver->balance += $transactionAmount;
             $receiver->save();
-    
+
             $transaction = Transaction::create([
                 'sender_id' => $sender->id,
                 'sender_type' => $sender instanceof User ? 'user' : 'vendor',
@@ -129,7 +129,7 @@ class TransactionController extends Controller
                 'amount' => $qrCodeData->amount,
                 'status' => 'completed',
             ]);
-    
+
             if ($feeAmount > 0) {
                 Fee::create([
                     'transaction_id' => $transaction->id,
@@ -143,24 +143,24 @@ class TransactionController extends Controller
                 'type' => 'transaction_sent',
                 'message' => 'You sent ' . $qrCodeData->amount . ' to ' . $receiver->name,
             ]);
-    
+
             Notification::create([
                 'user_id' => $receiver instanceof User ? $receiver->id : null,
                 'vendor_id' => $receiver instanceof Vendor ? $receiver->id : null,
                 'type' => 'transaction_received',
                 'message' => 'You received ' . $qrCodeData->amount . ' from ' . $sender->name,
             ]);
-    
+
             $qrCodeData->status = 'used';
             $qrCodeData->save();
-    
+
             DB::commit();
-    
+
             // Return sender and receiver as resources
             $senderResource = $sender instanceof User ? new UserResource($sender) : new VendorResource($sender);
             $receiverResource = $receiver instanceof User ? new UserResource($receiver) : new VendorResource($receiver);
-    
-            return $this->successResponse(200, 'Transaction successful', [
+
+            return $this->successResponse(200, __('word.transaction_successful'), [
                 'sender' => $senderResource,
                 'receiver' => $receiverResource,
                 'amount' => $transactionAmount,
@@ -176,32 +176,29 @@ class TransactionController extends Controller
         // Get the authenticated user (User or Vendor)
         if (auth()->guard('vendor')->check()) {
             $user = auth()->guard('vendor')->user();
-            $userType = 'vendor'; 
+            $userType = 'vendor';
         } elseif (auth()->guard('user')->check()) {
             $user = auth()->guard('user')->user();
-            $userType = 'user';   
+            $userType = 'user';
         } else {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'You are not authorized to perform this action',
-            ], 401);
+            return $this->errorResponse(400, __('word.you_are_not_authorized_to_perform_this_action'));
         }
-        $perPage = $validated['per_page'] ?? 5; 
+        $perPage = $validated['per_page'] ?? 5;
 
         // Fetch transactions where the user is either the sender or receiver
         $transactions = Transaction::where(function ($query) use ($user, $userType) {
             $query->where('sender_id', $user->id)
-                  ->where('sender_type', $userType);
+                ->where('sender_type', $userType);
         })->orWhere(function ($query) use ($user, $userType) {
             $query->where('receiver_id', $user->id)
-                  ->where('receiver_type', $userType);
+                ->where('receiver_type', $userType);
         })->orderBy('created_at', 'desc')->paginate($perPage);
-    
+
         // Format the transactions
         $formattedTransactions = $transactions->map(function ($transaction) use ($user, $userType) {
             $sender = $transaction->sender;
             $receiver = $transaction->receiver;
-    
+
             return [
                 'id' => $transaction->id,
                 'type' => $transaction->sender_id === $user->id ? 'sent' : 'received',
@@ -222,9 +219,8 @@ class TransactionController extends Controller
                 'created_at' => $transaction->created_at,
             ];
         });
-    
-        return response()->json([
-            'status' => 'success',
+
+        return $this->successResponse(200, __('word.transaction_history'), [
             'transactions' => $formattedTransactions,
         ]);
     }
