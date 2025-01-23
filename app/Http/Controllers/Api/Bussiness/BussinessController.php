@@ -13,6 +13,6 @@ class BussinessController extends Controller
     //return all bussiness
     public function index(){
         $bussiness = Business::all();
-        return $this->successResponse(200, 'All bussiness', $bussiness);    
+        return $this->successResponse(200, __('word.All bussiness'), $bussiness);    
     }
 }

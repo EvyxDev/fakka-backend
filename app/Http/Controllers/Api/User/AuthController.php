@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Artisan;
 use App\Http\Resources\API\UserResource;
 use Illuminate\Support\Facades\Validator;
+
 class AuthController extends Controller
 {
     use ApiResponse;
@@ -23,9 +24,7 @@ class AuthController extends Controller
     protected $userService;
 
     // Inject UserService to handle the business logic
-    public function __construct()
-    {
-    }
+    public function __construct() {}
     // Register new user
     public function UserRegister(Request $request)
     {
@@ -34,7 +33,7 @@ class AuthController extends Controller
             'name' => 'required|string',
             'phone' => 'required|string|unique:users,phone',
             'password' => 'required|string|min:6|confirmed',
-            'profile_image' => 'nullable|file|image|mimes:jpeg,png,jpg,gif,svg|max:2048',          
+            'profile_image' => 'nullable|file|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
 
         if ($validator->fails()) {
@@ -75,14 +74,14 @@ class AuthController extends Controller
 
         $credentials = $request->only('phone', 'password');
 
-        $user = User::where('phone', $request->phone)->first();
-
-        if ($user->phone_verified_at == null) {
-            return $this->errorResponse(401, __('auth.phone_not_verified'));
-        }
         
         if (!Auth::attempt($credentials)) {
             return $this->errorResponse(401, __('auth.invalid_credentials'));
+        }
+        $user = User::where('phone', $request->phone)->first();
+        
+        if ($user->phone_verified_at == null) {
+            return $this->errorResponse(401, __('auth.phone_not_verified'));
         }
 
         $user = Auth::user();

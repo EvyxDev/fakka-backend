@@ -36,7 +36,7 @@ class TransactionController extends Controller
         } elseif (auth()->guard('user')->check()) {
             $user = auth()->guard('user')->user();
         } else {
-            return $this->errorResponse(400, 'You are not authorized to perform this action');
+            return $this->errorResponse(400, __('word.you_are_not_authorized_to_perform_this_action'));
         }
 
         try {
@@ -48,11 +48,11 @@ class TransactionController extends Controller
                 'qr_code' => $qrCode,
                 'amount' => $amount,
             ]);
-            return $this->successResponse(200, 'QR code generated successfully', [
+            return $this->successResponse(200, ('word.qr_code_generated_successfully'), [
                 'Qr Code' => $Table,
             ]);
         } catch (\Exception $e) {
-            return $this->errorResponse(400, 'An error occurred while generating QR code' . $e->getMessage());
+            return $this->errorResponse(400, __('word.something_went_wrong') . $e->getMessage());
         }
     }
     public function scanQrCode(Request $request)
@@ -69,11 +69,11 @@ class TransactionController extends Controller
         $qrCodeData = QrCode::where('qr_code', $qrCode)->first();
     
         if (!$qrCodeData) {
-            return $this->errorResponse(400, 'QR code not found');
+            return $this->errorResponse(400, __('word.qr_code_not_found'));
         }
     
         if ($qrCodeData->status !== 'active') {
-            return $this->errorResponse(400, 'QR code is not active');
+            return $this->errorResponse(400, __('word.qr_code_already_used'));
         }
     
         if (auth()->guard('vendor')->check()) {
@@ -81,7 +81,7 @@ class TransactionController extends Controller
         } elseif (auth()->guard('user')->check()) {
             $receiver = auth()->guard('user')->user();
         } else {
-            return $this->errorResponse(400, 'You are not authorized to perform this action');
+            return $this->errorResponse(400, __('word.you_are_not_authorized_to_perform_this_action'));
         }
     
         if ($qrCodeData->user_id) {
@@ -91,19 +91,19 @@ class TransactionController extends Controller
         }
     
         if (!$sender) {
-            return $this->errorResponse(400, 'Sender not found');
+            return $this->errorResponse(400, __('word.sender_not_found'));
         }
     
         if ($sender->balance < $qrCodeData->amount) {
-            return $this->errorResponse(400, 'Insufficient balance');
+            return $this->errorResponse(400, __('word.insufficient_balance'));
         }
     
         if ($sender instanceof User && $receiver instanceof User) {
-            return $this->errorResponse(400, 'A user cannot send money to another user');
+            return $this->errorResponse(400, __('word.a_user_cannot_send_money_to_another_user'));
         }
     
         if ($sender instanceof Vendor && $receiver instanceof Vendor) {
-            return $this->errorResponse(400, 'A vendor cannot send money to another vendor');
+            return $this->errorResponse(400, __('word.a_vendor_cannot_send_money_to_another_vendor'));
         }
     
         DB::beginTransaction();
@@ -136,6 +136,20 @@ class TransactionController extends Controller
                     'amount' => $feeAmount,
                 ]);
             }
+
+            Notification::create([
+                'user_id' => $sender instanceof User ? $sender->id : null,
+                'vendor_id' => $sender instanceof Vendor ? $sender->id : null,
+                'type' => 'transaction_sent',
+                'message' => 'You sent ' . $qrCodeData->amount . ' to ' . $receiver->name,
+            ]);
+    
+            Notification::create([
+                'user_id' => $receiver instanceof User ? $receiver->id : null,
+                'vendor_id' => $receiver instanceof Vendor ? $receiver->id : null,
+                'type' => 'transaction_received',
+                'message' => 'You received ' . $qrCodeData->amount . ' from ' . $sender->name,
+            ]);
     
             $qrCodeData->status = 'used';
             $qrCodeData->save();
@@ -224,7 +238,7 @@ class TransactionController extends Controller
             $user = auth()->guard('user')->user();
             $notifications = Notification::where('user_id', $user->id)->orderBy('created_at', 'desc')->get();
         } else {
-            return $this->errorResponse(400, 'You are not authorized to perform this action');
+            return $this->errorResponse(400, __('word.you_are_not_authorized_to_perform_this_action'));
         }
 
         $formattedNotifications = $notifications->map(function ($notification) {
@@ -236,7 +250,7 @@ class TransactionController extends Controller
                 'created_at' => $notification->created_at->toDateTimeString(),
             ];
         });
-        return $this->successResponse(200, 'Notifications retrieved successfully', [
+        return $this->successResponse(200, __('word.notifications'), [
             'notifications' => $formattedNotifications,
         ]);
     }
