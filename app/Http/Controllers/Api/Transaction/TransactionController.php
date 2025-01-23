@@ -159,28 +159,35 @@ class TransactionController extends Controller
     }
     public function transactionHistory(Request $request)
     {
+        // Get the authenticated user (User or Vendor)
         if (auth()->guard('vendor')->check()) {
             $user = auth()->guard('vendor')->user();
+            $userType = 'vendor'; 
         } elseif (auth()->guard('user')->check()) {
             $user = auth()->guard('user')->user();
+            $userType = 'user';   
         } else {
             return response()->json([
                 'status' => 'error',
                 'message' => 'You are not authorized to perform this action',
-            ]);
+            ], 401);
         }
+        $perPage = $validated['per_page'] ?? 5; 
 
-        $transactions = Transaction::where(function ($query) use ($user) {
+        // Fetch transactions where the user is either the sender or receiver
+        $transactions = Transaction::where(function ($query) use ($user, $userType) {
             $query->where('sender_id', $user->id)
-                ->where('sender_type', get_class($user));
-        })->orWhere(function ($query) use ($user) {
+                  ->where('sender_type', $userType);
+        })->orWhere(function ($query) use ($user, $userType) {
             $query->where('receiver_id', $user->id)
-                ->where('receiver_type', get_class($user));
-        })->orderBy('created_at', 'desc')->get();
-
-        $formattedTransactions = $transactions->map(function ($transaction) use ($user) {
+                  ->where('receiver_type', $userType);
+        })->orderBy('created_at', 'desc')->paginate($perPage);
+    
+        // Format the transactions
+        $formattedTransactions = $transactions->map(function ($transaction) use ($user, $userType) {
             $sender = $transaction->sender;
             $receiver = $transaction->receiver;
+    
             return [
                 'id' => $transaction->id,
                 'type' => $transaction->sender_id === $user->id ? 'sent' : 'received',
@@ -190,17 +197,20 @@ class TransactionController extends Controller
                     'id' => $sender->id,
                     'type' => $transaction->sender_type,
                     'name' => $sender->name,
+                    'profile_image' => $sender->profile_image ? url('public/' . $sender->profile_image) : null,
                 ],
                 'receiver' => [
                     'id' => $receiver->id,
                     'type' => $transaction->receiver_type,
                     'name' => $receiver->name,
+                    'profile_image' => $receiver->profile_image ? url('public/' . $receiver->profile_image) : null,
                 ],
-                'created_at' => $transaction->created_at->toDateTimeString(),
+                'created_at' => $transaction->created_at,
             ];
         });
-
-        return $this->successResponse(200, 'Transaction history retrieved successfully', [
+    
+        return response()->json([
+            'status' => 'success',
             'transactions' => $formattedTransactions,
         ]);
     }
