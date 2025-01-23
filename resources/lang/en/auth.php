@@ -16,10 +16,13 @@ return [
         'user_profile' => 'User profile retrieved successfully.',
         'vendor_not_found' => 'Vendor not found.',
         'profile' => 'Profile retrieved successfully.',
-
         'pin_set_success' => 'PIN code set successfully.',
         'incorrect_old_pin' => 'The old PIN code is incorrect.',
         'new_pin_must_differ' => 'The new PIN code must be different from the old PIN code.',
         'pin_changed_success' => 'PIN code changed successfully.',
-        'account_deleted_success'=>'Account has been deleted successfully'
+        'account_deleted_success'=>'Account has been deleted successfully',
+
+        'validation' => [
+                'errors' => 'Verification errors occurred.',
+        ],
 ];

@@ -14,4 +14,12 @@ return [
     'qr_code_not_found' => 'رمز الاستجابة السريعة غير موجود',
     'qr_code_already_used' => 'رمز الاستجابة السريعة مستخدم بالفعل',
     'transaction_history' => 'سجل المعاملات',
+    'The phone field is required' => 'حقل الهاتف مطلوب',
+    'required' => 'حقل :attribute مطلوب.',
+    'string' => 'حقل :attribute يجب أن يكون نصًا.',
+    'attributes' => [
+        'phone' => 'الهاتف',
+        'phonecode' => 'رمز الهاتف',
+    ],
+
 ];

@@ -16,9 +16,12 @@ return [
         'user_profile' => 'تم استرجاع بيانات المستخدم بنجاح.',
         'vendor_not_found' => 'لم يتم العثور على البائع.',
         'profile' => 'تم استرجاع بيانات الملف الشخصي بنجاح.',
-
         'pin_set_success' => 'تم تعيين رمز PIN بنجاح.',
         'incorrect_old_pin' => 'رمز PIN القديم غير صحيح.',
         'new_pin_must_differ' => 'يجب أن يكون رمز PIN الجديد مختلفًا عن القديم.',
         'pin_changed_success' => 'تم تغيير رمز PIN بنجاح.',
+
+        'validation' => [
+                'errors' => 'حدثت أخطاء في التحقق.',
+        ],
 ];

@@ -10,13 +10,15 @@ use Symfony\Component\HttpFoundation\Response;
 
 class LocalizationMiddleware
 {
-    public function handle(Request $request, Closure $next): Response
+    public function handle(Request $request, Closure $next)
     {
-        $locale = $request->header('lang', Config::get('app.locale'));
-        if (!in_array($locale, Config::get('app.supported_locales'))) {
-            $locale = Config::get('app.locale');
+        $supportedLocales = ['en', 'ar']; 
+        $locale = $request->header('lang');
+        if ($locale && in_array($locale, $supportedLocales)) {
+            app()->setLocale($locale); 
+        } else {
+            app()->setLocale('en'); 
         }
-        App::setLocale($locale);
         return $next($request);
     }
 }

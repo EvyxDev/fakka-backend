@@ -25,7 +25,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::prefix('user')->group(function () {
+Route::prefix('user')->middleware('Localization')->group(function () {
 
     Route::post('register', [UserAuthController::class, 'UserRegister']);
     Route::post('login', [UserAuthController::class, 'UserLogin']);
@@ -43,7 +43,7 @@ Route::prefix('user')->group(function () {
 });
 
 
-Route::prefix('vendor')->group(function () {
+Route::prefix('vendor')->middleware('Localization')->group(function () {
     Route::post('register', [VendorAuthController::class, 'VendorRegister']);
     Route::post('login', [VendorAuthController::class, 'VendorLogin']);
     Route::post('verify-otp', [VendorAuthController::class, 'VendorVerifyOtp']);
