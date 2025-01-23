@@ -28,6 +28,7 @@ class User extends Authenticatable implements JWTSubject
         'pincode',
         'password',
         'balance',
+        'phonecode',
     ];
 
     public function qrCodes()

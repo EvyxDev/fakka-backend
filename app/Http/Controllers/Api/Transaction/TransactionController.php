@@ -208,12 +208,17 @@ class TransactionController extends Controller
                     'id' => $sender->id,
                     'type' => $transaction->sender_type,
                     'name' => $sender->name,
+                    'phone'=>$sender->phone,
+                    'phonecode'=>$sender->phonecode,
                     'profile_image' => $sender->profile_image ? url('public/' . $sender->profile_image) : null,
                 ],
                 'receiver' => [
                     'id' => $receiver->id,
                     'type' => $transaction->receiver_type,
                     'name' => $receiver->name,
+                    'phone'=>$receiver->phone,
+                    'phonecode'=>$receiver->phonecode,
+
                     'profile_image' => $receiver->profile_image ? url('public/' . $receiver->profile_image) : null,
                 ],
                 'created_at' => $transaction->created_at,
