@@ -44,6 +44,7 @@ class AuthController extends Controller
         $user = User::create([
             'name' => $request->name,
             'phone' => $request->phone,
+            'phonecode'=>$request->phonecode,
             'password' => Hash::make($request->password),
         ]);
 
@@ -63,9 +64,9 @@ class AuthController extends Controller
     // Login user
     public function UserLogin(Request $request)
     {
-        // Validate user input
         $validator = Validator::make($request->all(), [
             'phone' => 'required|string',
+            'phonecode' => 'required|string', 
             'password' => 'required|string',
         ]);
 
@@ -73,19 +74,22 @@ class AuthController extends Controller
             return $this->errorResponse(422, __('validation.errors'), $validator->errors());
         }
 
-        $credentials = $request->only('phone', 'password');
+        $user = User::where('phone', $request->phone)
+                    ->where('phonecode', $request->phonecode)
+                    ->first();
 
-        $user = User::where('phone', $request->phone)->first();
+        if (!$user) {
+            return $this->errorResponse(404, __('auth.user_not_found'));
+        }
 
         if ($user->phone_verified_at == null) {
             return $this->errorResponse(401, __('auth.phone_not_verified'));
         }
-        
-        if (!Auth::attempt($credentials)) {
+
+        if (!Auth::attempt(['phone' => $request->phone, 'password' => $request->password])) {
             return $this->errorResponse(401, __('auth.invalid_credentials'));
         }
 
-        $user = Auth::user();
         $token = JWTAuth::fromUser($user);
 
         return $this->successResponse(200, __('auth.login_success'), [
@@ -104,9 +108,9 @@ class AuthController extends Controller
     // Verify OTP
     public function UserVerifyOtp(Request $request)
     {
-        // Validate user input
         $validator = Validator::make($request->all(), [
             'phone' => 'required|string',
+            'phonecode' => 'required|string', 
             'otp' => 'required|string',
         ]);
 
@@ -114,16 +118,24 @@ class AuthController extends Controller
             return $this->errorResponse(422, __('validation.errors'), $validator->errors());
         }
 
+        $user = User::where('phone', $request->phone)
+                    ->where('phonecode', $request->phonecode)
+                    ->first();
+
+        if (!$user) {
+            return $this->errorResponse(404, __('auth.user_not_found'));
+        }
+
         $otpService = new Otp();
-        $phone = $request->phone;
+        $phone = $user->phone;
         $otp = $request->otp;
         $response = $otpService->validate($phone, $otp);
 
         if ($response->status) {
-            $user = User::where('phone', $phone)->first();
             $user->phone_verified_at = Carbon::now();
-            $token = JWTAuth::fromUser($user);
             $user->save();
+
+            $token = JWTAuth::fromUser($user);
 
             return $this->successResponse(200, __('auth.otp_verified'), [
                 'token' => $token,
@@ -140,32 +152,57 @@ class AuthController extends Controller
         // Validate user input
         $validator = Validator::make($request->all(), [
             'phone' => 'required|string',
+            'phonecode' => 'required|string', // Add phonecode validation
         ]);
-
+    
         if ($validator->fails()) {
             return $this->errorResponse(422, __('validation.errors'), $validator->errors());
         }
-
+    
+        // Find the user by phone and phonecode
+        $user = User::where('phone', $request->phone)
+                    ->where('phonecode', $request->phonecode)
+                    ->first();
+    
+        // Check if the user exists
+        if (!$user) {
+            return $this->errorResponse(404, __('auth.user_not_found'));
+        }
+    
+        // Generate and send OTP
         $otpService = new Otp();
-        $phone = $request->phone;
+        $phone = $user->phone;
         $otpService->generate($phone, 'numeric', 4, 10);
-
+    
         return $this->successResponse(200, __('auth.otp_sent'), ['phone' => $phone]);
     }
 
     // Forgot password
     public function UserForgotPassword(Request $request)
     {
+        // Validate user input
         $validator = Validator::make($request->all(), [
-            'phone' => 'required|string|exists:users,phone',
+            'phone' => 'required|string',
+            'phonecode' => 'required|string', // Add phonecode validation
         ]);
 
         if ($validator->fails()) {
             return $this->errorResponse(422, __('validation.errors'), $validator->errors());
         }
 
+        // Find the user by phone and phonecode
+        $user = User::where('phone', $request->phone)
+                    ->where('phonecode', $request->phonecode)
+                    ->first();
+
+        // Check if the user exists
+        if (!$user) {
+            return $this->errorResponse(404, __('auth.user_not_found'));
+        }
+
+        // Generate and send OTP
         $otpService = new Otp();
-        $phone = $request->phone;
+        $phone = $user->phone;
         $otpService->generate($phone, 'numeric', 4, 10);
 
         return $this->successResponse(200, __('auth.otp_sent'), ['phone' => $phone]);
@@ -174,8 +211,10 @@ class AuthController extends Controller
     // Reset password
     public function UserResetPassword(Request $request)
     {
+        // Validate user input
         $validator = Validator::make($request->all(), [
             'phone' => 'required|string',
+            'phonecode' => 'required|string', // Add phonecode validation
             'password' => 'required|string|min:6|confirmed',
         ]);
 
@@ -183,19 +222,22 @@ class AuthController extends Controller
             return $this->errorResponse(422, __('validation.errors'), $validator->errors());
         }
 
-        $phone = $request->phone;
-        $user = User::where('phone', $phone)->first();
+        // Find the user by phone and phonecode
+        $user = User::where('phone', $request->phone)
+                    ->where('phonecode', $request->phonecode)
+                    ->first();
 
+        // Check if the user exists
         if (!$user) {
             return $this->errorResponse(404, __('auth.user_not_found'));
         }
 
+        // Update the user's password
         $user->password = Hash::make($request->password);
         $user->save();
 
         return $this->successResponse(200, __('auth.password_reset_success'));
     }
-
     // Change password
     public function UserChangePassword(Request $request)
     {

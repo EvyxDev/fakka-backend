@@ -38,6 +38,7 @@ class AuthController extends Controller
             'name' => $request->name,
             'phone' => $request->phone,
             'password' => Hash::make($request->password),
+            'phonecode'=>$request->phonecode,
             'business_id' => $request->business_id,
         ]);
 
@@ -60,6 +61,7 @@ class AuthController extends Controller
         // Validate user input
         $validator = Validator::make($request->all(), [
             'phone' => 'required|string',
+            'phonecode' => 'required|string', 
             'otp' => 'required|string',
         ]);
 
@@ -67,16 +69,27 @@ class AuthController extends Controller
             return $this->errorResponse(422, __('validation.errors'), $validator->errors());
         }
 
+        $vendor = Vendor::where('phone', $request->phone)
+                        ->where('phonecode', $request->phonecode)
+                        ->first();
+
+        if (!$vendor) {
+            return $this->errorResponse(404, __('auth.vendor_not_found'));
+        }
+
+        // Validate the OTP
         $otpService = new Otp();
-        $phone = $request->phone;
+        $phone = $vendor->phone;
         $otp = $request->otp;
         $response = $otpService->validate($phone, $otp);
 
         if ($response->status) {
-            $vendor = Vendor::where('phone', $phone)->first();
+            // Mark the vendor's phone as verified
             $vendor->phone_verified_at = Carbon::now();
-            $token = JWTAuth::fromUser($vendor);
             $vendor->save();
+
+            // Generate a JWT token for the authenticated vendor
+            $token = JWTAuth::fromUser($vendor);
 
             return $this->successResponse(200, __('auth.otp_verified'), [
                 'token' => $token,
@@ -86,16 +99,19 @@ class AuthController extends Controller
 
         return $this->errorResponse(400, __('auth.invalid_otp'));
     }
-
     // Login vendor
     public function VendorLogin(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'phone' => 'required|string',
+            'phonecode' => 'required|string',
             'password' => 'required|string',
         ]);
 
-        $vendor = Vendor::where('phone', $request->phone)->first();
+        $vendor = Vendor::where('phone', $request->phone)
+        ->where('phonecode', $request->phonecode)
+        ->first();
+
         if ($vendor->phone_verified_at == null) {
             return $this->errorResponse(401, __('auth.phone_not_verified'));
         }
@@ -133,31 +149,16 @@ class AuthController extends Controller
         // Validate user input
         $validator = Validator::make($request->all(), [
             'phone' => 'required|string',
+            'phonecode' => 'required|string', 
         ]);
 
         if ($validator->fails()) {
             return $this->errorResponse(422, __('validation.errors'), $validator->errors());
         }
 
-        $otpService = new Otp();
-        $phone = $request->phone;
-        $otpService->generate($phone, 'numeric', 4, 10);
-
-        return $this->successResponse(200, __('auth.otp_sent'), ['phone' => $phone]);
-    }
-
-    // Forgot password
-    public function VendorForgotPassword(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'phone' => 'required|string|exists:vendors,phone',
-        ]);
-
-        if ($validator->fails()) {
-            return $this->errorResponse(422, __('validation.errors'), $validator->errors());
-        }
-
-        $vendor = Vendor::where('phone', $request->phone)->first();
+        $vendor = Vendor::where('phone', $request->phone)
+                        ->where('phonecode', $request->phonecode)
+                        ->first();
 
         if (!$vendor) {
             return $this->errorResponse(404, __('auth.vendor_not_found'));
@@ -170,33 +171,66 @@ class AuthController extends Controller
         return $this->successResponse(200, __('auth.otp_sent'), ['phone' => $phone]);
     }
 
-    // Reset password
-    public function VendorResetPassword(Request $request)
+    // Forgot password
+    public function VendorForgotPassword(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'phone' => 'required|string',
-            'password' => 'required|string|min:6|confirmed',
+            'phonecode' => 'required|string', 
         ]);
-
+    
         if ($validator->fails()) {
             return $this->errorResponse(422, __('validation.errors'), $validator->errors());
         }
-
-        $vendor = Vendor::where('phone', $request->phone)->first();
-
+    
+        $vendor = Vendor::where('phone', $request->phone)
+                        ->where('phonecode', $request->phonecode)
+                        ->first();
+    
         if (!$vendor) {
             return $this->errorResponse(404, __('auth.vendor_not_found'));
         }
+    
+        // Generate and send OTP
+        $otpService = new Otp();
+        $phone = $vendor->phone;
+        $otpService->generate($phone, 'numeric', 4, 10);
+    
+        return $this->successResponse(200, __('auth.otp_sent'), ['phone' => $phone]);
+    }
 
+    // Reset password
+    public function VendorResetPassword(Request $request)
+    {
+        // Validate user input
+        $validator = Validator::make($request->all(), [
+            'phone' => 'required|string',
+            'phonecode' => 'required|string', // Add phonecode validation
+            'password' => 'required|string|min:6|confirmed',
+        ]);
+    
+        if ($validator->fails()) {
+            return $this->errorResponse(422, __('validation.errors'), $validator->errors());
+        }
+    
+        $vendor = Vendor::where('phone', $request->phone)
+                        ->where('phonecode', $request->phonecode)
+                        ->first();
+    
+        if (!$vendor) {
+            return $this->errorResponse(404, __('auth.vendor_not_found'));
+        }
+    
         $vendor->password = Hash::make($request->password);
         $vendor->save();
-
+    
         return $this->successResponse(200, __('auth.password_reset_success'));
     }
 
     // Change password
     public function VendorChangePassword(Request $request)
     {
+        // Validate user input
         $validator = Validator::make($request->all(), [
             'old_password' => 'required|string|min:6',
             'new_password' => 'required|string|min:6|confirmed',
