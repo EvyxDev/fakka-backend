@@ -38,9 +38,9 @@ class AuthController extends Controller
             'name' => $request->name,
             'phone' => $request->phone,
             'password' => Hash::make($request->password),
-            'phonecode'=>$request->phonecode,
+            'phonecode' => $request->phonecode,
             // 'business_id' => $request->business_id,
-        ]); 
+        ]);
 
         if ($request->hasFile('profile_image')) {
             $imagePath = uploadImage($request->file('profile_image'), 'vendor/profile_image');
@@ -61,7 +61,7 @@ class AuthController extends Controller
         // Validate user input
         $validator = Validator::make($request->all(), [
             'phone' => 'required|string',
-            'phonecode' => 'required|string', 
+            'phonecode' => 'required|string',
             'otp' => 'required|string',
         ]);
 
@@ -70,8 +70,8 @@ class AuthController extends Controller
         }
 
         $vendor = Vendor::where('phone', $request->phone)
-                        ->where('phonecode', $request->phonecode)
-                        ->first();
+            ->where('phonecode', $request->phonecode)
+            ->first();
 
         if (!$vendor) {
             return $this->errorResponse(404, __('auth.vendor_not_found'));
@@ -109,13 +109,9 @@ class AuthController extends Controller
         ]);
 
         $vendor = Vendor::where('phone', $request->phone)
-        ->where('phonecode', $request->phonecode)
-        ->first();
+            ->where('phonecode', $request->phonecode)
+            ->first();
 
-        if ($vendor->phone_verified_at == null) {
-            return $this->errorResponse(401, __('auth.phone_not_verified'));
-        }
-        
         if ($validator->fails()) {
             return $this->errorResponse(422, __('validation.errors'), $validator->errors());
         }
@@ -127,6 +123,10 @@ class AuthController extends Controller
         }
 
         $vendor = Auth::guard('vendor')->user();
+
+        if ($vendor->phone_verified_at == null) {
+            return $this->errorResponse(401, __('auth.phone_not_verified'));
+        }
         $token = JWTAuth::fromUser($vendor);
 
         return $this->successResponse(200, __('auth.login_success'), [
@@ -139,7 +139,7 @@ class AuthController extends Controller
     public function VendorLogout(Request $request)
     {
         Auth::guard('vendor')->logout();
-        
+
         return $this->successResponse(200, __('auth.logout_success'));
     }
 
@@ -149,7 +149,7 @@ class AuthController extends Controller
         // Validate user input
         $validator = Validator::make($request->all(), [
             'phone' => 'required|string',
-            'phonecode' => 'required|string', 
+            'phonecode' => 'required|string',
         ]);
 
         if ($validator->fails()) {
@@ -157,8 +157,8 @@ class AuthController extends Controller
         }
 
         $vendor = Vendor::where('phone', $request->phone)
-                        ->where('phonecode', $request->phonecode)
-                        ->first();
+            ->where('phonecode', $request->phonecode)
+            ->first();
 
         if (!$vendor) {
             return $this->errorResponse(404, __('auth.vendor_not_found'));
@@ -176,26 +176,26 @@ class AuthController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'phone' => 'required|string',
-            'phonecode' => 'required|string', 
+            'phonecode' => 'required|string',
         ]);
-    
+
         if ($validator->fails()) {
             return $this->errorResponse(422, __('validation.errors'), $validator->errors());
         }
-    
+
         $vendor = Vendor::where('phone', $request->phone)
-                        ->where('phonecode', $request->phonecode)
-                        ->first();
-    
+            ->where('phonecode', $request->phonecode)
+            ->first();
+
         if (!$vendor) {
             return $this->errorResponse(404, __('auth.vendor_not_found'));
         }
-    
+
         // Generate and send OTP
         $otpService = new Otp();
         $phone = $vendor->phone;
         $otpService->generate($phone, 'numeric', 4, 10);
-    
+
         return $this->successResponse(200, __('auth.otp_sent'), ['phone' => $phone]);
     }
 
@@ -208,22 +208,22 @@ class AuthController extends Controller
             'phonecode' => 'required|string', // Add phonecode validation
             'password' => 'required|string|min:6|confirmed',
         ]);
-    
+
         if ($validator->fails()) {
             return $this->errorResponse(422, __('validation.errors'), $validator->errors());
         }
-    
+
         $vendor = Vendor::where('phone', $request->phone)
-                        ->where('phonecode', $request->phonecode)
-                        ->first();
-    
+            ->where('phonecode', $request->phonecode)
+            ->first();
+
         if (!$vendor) {
             return $this->errorResponse(404, __('auth.vendor_not_found'));
         }
-    
+
         $vendor->password = Hash::make($request->password);
         $vendor->save();
-    
+
         return $this->successResponse(200, __('auth.password_reset_success'));
     }
 
@@ -265,5 +265,13 @@ class AuthController extends Controller
     {
         $vendor = Auth::guard('vendor')->user();
         return $this->successResponse(200, __('auth.profile'), new VendorResource($vendor));
+    }
+
+    //delete profile
+    public function VendorDeleteProfile()
+    {
+        $vendor = Auth::guard('vendor')->user();
+        $vendor->delete();
+        return $this->successResponse(200, __('auth.profile_deleted'));
     }
 }

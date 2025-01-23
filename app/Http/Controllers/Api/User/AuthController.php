@@ -280,4 +280,11 @@ class AuthController extends Controller
         $user = Auth::user();
         return $this->successResponse(200, __('auth.user_profile'), new UserResource($user));
     }
+    // delete account
+    public function UserDeleteAccount()
+    {
+        $user = Auth::user();
+        $user->delete();
+        return $this->successResponse(200, __('auth.account_deleted_success'));
+    }
 }
