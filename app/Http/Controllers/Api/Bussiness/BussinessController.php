@@ -11,8 +11,9 @@ class BussinessController extends Controller
 {
     use ApiResponse;
     //return all bussiness
-    public function index(){
-        $bussiness = Business::all();
+    public function index(){ 
+        $perPage = $validated['per_page'] ?? 5; 
+        $bussiness = Business::paginate($perPage);
         return $this->successResponse(200, __('word.All bussiness'), $bussiness);    
     }
 }
