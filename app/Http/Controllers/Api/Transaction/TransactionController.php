@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use App\Http\Resources\API\UserResource;
+use App\Http\Resources\API\VendorResource;
 
 class TransactionController extends Controller
 {
@@ -140,9 +142,13 @@ class TransactionController extends Controller
     
             DB::commit();
     
+            // Return sender and receiver as resources
+            $senderResource = $sender instanceof User ? new UserResource($sender) : new VendorResource($sender);
+            $receiverResource = $receiver instanceof User ? new UserResource($receiver) : new VendorResource($receiver);
+    
             return $this->successResponse(200, 'Transaction successful', [
-                'sender' => $sender,
-                'receiver' => $receiver,
+                'sender' => $senderResource,
+                'receiver' => $receiverResource,
                 'amount' => $transactionAmount,
                 'fee' => $feeAmount,
             ]);

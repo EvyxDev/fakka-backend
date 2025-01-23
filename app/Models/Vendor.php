@@ -22,6 +22,7 @@ class Vendor extends Authenticatable implements JWTSubject
         'password',
         'user_id',
         'balance',
+        'bussiness_id'
     ];
 
     public function qrCodes()
