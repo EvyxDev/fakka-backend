@@ -112,6 +112,8 @@ class AuthController extends Controller
             ->where('phonecode', $request->phonecode)
             ->first();
 
+
+        
         if ($validator->fails()) {
             return $this->errorResponse(422, __('validation.errors'), $validator->errors());
         }
@@ -124,7 +126,7 @@ class AuthController extends Controller
 
         $vendor = Auth::guard('vendor')->user();
 
-        if ($vendor->phone_verified_at == null) {
+		if ($vendor->phone_verified_at == null) {
             return $this->errorResponse(401, __('auth.phone_not_verified'));
         }
         $token = JWTAuth::fromUser($vendor);
@@ -272,6 +274,6 @@ class AuthController extends Controller
     {
         $vendor = Auth::guard('vendor')->user();
         $vendor->delete();
-        return $this->successResponse(200, __('auth.profile_deleted'));
+        return $this->successResponse(200, __('auth.account_deleted_success'));
     }
 }
