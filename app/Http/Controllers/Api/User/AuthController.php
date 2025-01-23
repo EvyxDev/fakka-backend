@@ -141,6 +141,7 @@ class AuthController extends Controller
         if ($response->status) {
             $user->phone_verified_at = Carbon::now();
             $user->save();
+            Artisan::call('otp:clean');
 
             $token = JWTAuth::fromUser($user);
 

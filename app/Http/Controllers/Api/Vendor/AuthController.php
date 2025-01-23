@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Resources\Api\VendorResource;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Artisan;
+
 
 class AuthController extends Controller
 {
@@ -82,11 +84,11 @@ class AuthController extends Controller
         $phone = $vendor->phone;
         $otp = $request->otp;
         $response = $otpService->validate($phone, $otp);
-
         if ($response->status) {
             // Mark the vendor's phone as verified
             $vendor->phone_verified_at = Carbon::now();
             $vendor->save();
+            Artisan::call('otp:clean');
 
             // Generate a JWT token for the authenticated vendor
             $token = JWTAuth::fromUser($vendor);

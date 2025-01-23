@@ -38,6 +38,8 @@ Route::prefix('user')->group(function () {
     Route::get('profile', [UserAuthController::class, 'UserProfile']);
     Route::post('set-pin', [UserPinController::class, 'UserSetpinCode']);
     Route::post('changePinCode' , [UserPinController::class, 'UserChangePinCode']);
+    Route::post('changePinCode' , [UserPinController::class, 'UserChangePinCode']);
+    Route::post('delete-account', [UserAuthController::class, 'UserDeleteAccount']);
 });
 
 
@@ -53,6 +55,7 @@ Route::prefix('vendor')->group(function () {
     Route::post('set-pin', [VendorPinController::class, 'VendorSetpinCode']);
     Route::post('changePinCode' , [VendorPinController::class, 'VendorChangePinCode']);
     Route::get('profile', [VendorAuthController::class, 'VendorProfile']);
+    Route::post('delete-account', [VendorAuthController::class, 'VendorDeleteAccount']);
 });
 
 Route::prefix('Transaction')->group(function () {
