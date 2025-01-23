@@ -227,4 +227,10 @@ class AuthController extends Controller
 
         return $this->successResponse(200, __('auth.password_changed_success'));
     }
+    //show user profile
+    public function UserProfile()
+    {
+        $user = Auth::user();
+        return $this->successResponse(200, __('auth.user_profile'), new UserResource($user));
+    }
 }

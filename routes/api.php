@@ -3,6 +3,7 @@
 use App\Models\Vendor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\Bussiness\BussinessController;
 use App\Http\Controllers\Api\Transaction\TransactionController;
 use App\Http\Controllers\Api\User\PinController as UserPinController;
 use App\Http\Controllers\Api\User\AuthController as UserAuthController;
@@ -34,6 +35,7 @@ Route::prefix('user')->group(function () {
     Route::post('reset-password', [UserAuthController::class, 'UserResetPassword']);
     Route::post('change-password',[UserAuthController::class, 'UserChangePassword']);
     Route::post('forget-password', [UserAuthController::class, 'UserForgotPassword']);
+    Route::get('profile', [UserAuthController::class, 'UserProfile']);
     Route::post('set-pin', [UserPinController::class, 'UserSetpinCode']);
     Route::post('changePinCode' , [UserPinController::class, 'UserChangePinCode']);
 });
@@ -50,6 +52,7 @@ Route::prefix('vendor')->group(function () {
     Route::post('forgot-password', [VendorAuthController::class, 'VendorForgotPassword']);
     Route::post('set-pin', [VendorPinController::class, 'VendorSetpinCode']);
     Route::post('changePinCode' , [VendorPinController::class, 'VendorChangePinCode']);
+    Route::get('profile', [VendorAuthController::class, 'VendorProfile']);
 });
 
 Route::prefix('Transaction')->group(function () {
@@ -57,4 +60,5 @@ Route::prefix('Transaction')->group(function () {
     Route::post('scanQrCode', [TransactionController::class, 'scanQrCode']);
     Route::get('transactionHistory', [TransactionController::class, 'transactionHistory']);
 });
+Route::get('business', [BussinessController::class, 'index']);
 Route::get('notifications', [TransactionController::class, 'getNotifications']);

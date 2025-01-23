@@ -225,4 +225,11 @@ class AuthController extends Controller
 
         return $this->successResponse(200, __('auth.password_changed_success'));
     }
+
+    //show profile
+    public function VendorProfile()
+    {
+        $vendor = Auth::guard('vendor')->user();
+        return $this->successResponse(200, __('auth.profile'), new VendorResource($vendor));
+    }
 }
