@@ -11,7 +11,7 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use App\Http\Resources\API\VendorResource;
+use App\Http\Resources\Api\VendorResource;
 use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
