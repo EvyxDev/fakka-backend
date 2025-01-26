@@ -2,11 +2,7 @@
 
 namespace App\Http\Controllers\Api\Transaction;
 
-use App\Models\Fee;
-use App\Models\User;
-use App\Models\QrCode;
-use App\Models\Vendor;
-use App\Models\Transaction;
+use App\Models\{Fee, QrCode, Transaction, User, Vendor};
 use App\Traits\ApiResponse;
 use Illuminate\Support\Str;
 use App\Models\Notification;
@@ -101,10 +97,12 @@ class TransactionController extends Controller
         // if ($sender instanceof User && $receiver instanceof User) {
         //     return $this->errorResponse(400, __('word.a_user_cannot_send_money_to_another_user'));
         // }
-
         // if ($sender instanceof Vendor && $receiver instanceof Vendor) {
         //     return $this->errorResponse(400, __('word.a_vendor_cannot_send_money_to_another_vendor'));
         // }
+        if ($sender->id == $receiver->id) {
+            return $this->errorResponse(400, __('word.you_cannot_send_money_to_yourself'));
+        }
 
         DB::beginTransaction();
         try {
@@ -156,7 +154,6 @@ class TransactionController extends Controller
 
             DB::commit();
 
-            // Return sender and receiver as resources
             $senderResource = $sender instanceof User ? new UserResource($sender) : new VendorResource($sender);
             $receiverResource = $receiver instanceof User ? new UserResource($receiver) : new VendorResource($receiver);
 

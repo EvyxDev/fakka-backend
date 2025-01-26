@@ -23,7 +23,6 @@ return [
         'account_deleted_success'=>'Account has been deleted successfully',
         'pin_already_set' => 'PIN code already set.',
         'account_deleted_success'=>'Account has been deleted successfully',
-
         'validation' => [
                 'errors' => 'Verification errors occurred.',
         ],

@@ -14,4 +14,5 @@ return [
     'qr_code_not_found' => 'QR code not found',
     'qr_code_already_used' => 'QR code already used',
     'transaction_history' => 'Transaction history',
+    'you_cannot_send_money_to_yourself' => 'You cannot send money to yourself',
 ];
