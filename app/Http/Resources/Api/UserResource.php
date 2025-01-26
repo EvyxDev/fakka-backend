@@ -18,13 +18,16 @@ class UserResource extends JsonResource
                 $profileImageUrl = env('APP_URL') . '/public/' . $this->profile_image;
             }
         }
-    
+        // if the pincode is set, return true, else return false
+        $isPinSet = $this->pincode ? 'exist' : null;
+        
         return [
             'id' => $this->id ?? null,
             'name' => $this->name ?? null,
             'phone' => $this->phone ?? null,
             'profile_image' => $profileImageUrl,
             'balance' => $this->balance ?? null,
+            'pincode' => $isPinSet,
             'created_at' => $this->created_at ?? null,
             'updated_at' => $this->updated_at ?? null,
         ];
