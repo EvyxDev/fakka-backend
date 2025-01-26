@@ -98,18 +98,18 @@ class TransactionController extends Controller
             return $this->errorResponse(400, __('word.insufficient_balance'));
         }
 
-        if ($sender instanceof User && $receiver instanceof User) {
-            return $this->errorResponse(400, __('word.a_user_cannot_send_money_to_another_user'));
-        }
+        // if ($sender instanceof User && $receiver instanceof User) {
+        //     return $this->errorResponse(400, __('word.a_user_cannot_send_money_to_another_user'));
+        // }
 
-        if ($sender instanceof Vendor && $receiver instanceof Vendor) {
-            return $this->errorResponse(400, __('word.a_vendor_cannot_send_money_to_another_vendor'));
-        }
+        // if ($sender instanceof Vendor && $receiver instanceof Vendor) {
+        //     return $this->errorResponse(400, __('word.a_vendor_cannot_send_money_to_another_vendor'));
+        // }
 
         DB::beginTransaction();
         try {
             $feeAmount = 0;
-            if ($sender instanceof Vendor) {
+            if ($sender instanceof Vendor || $sender instanceof User) {
                 $feeAmount = $qrCodeData->amount * 0.10;
             }
 
@@ -218,7 +218,6 @@ class TransactionController extends Controller
                     'name' => $receiver->name,
                     'phone'=>$receiver->phone,
                     'phonecode'=>$receiver->phonecode,
-
                     'profile_image' => $receiver->profile_image ? url('public/' . $receiver->profile_image) : null,
                 ],
                 'created_at' => $transaction->created_at,
@@ -248,7 +247,7 @@ class TransactionController extends Controller
                 'type' => $notification->type,
                 'message' => $notification->message,
                 'is_read' => $notification->is_read,
-                'created_at' => $notification->created_at->toDateTimeString(),
+                'created_at' => $notification->created_at,
             ];
         });
         return $this->successResponse(200, __('word.notifications'), [

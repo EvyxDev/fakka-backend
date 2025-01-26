@@ -26,8 +26,8 @@ class UserResource extends JsonResource
             'id' => $this->id ?? null,
             'name' => $this->name ?? null,
             'phone' => $this->phone ?? null,
-            'profile_image' => $profileImageUrl, // Use the constructed URL
-            'pincode' => $this->pincode ?? null,
+            'profile_image' => $profileImageUrl,
+            'balance' => $this->balance ?? null,
             'created_at' => $this->created_at ?? null,
             'updated_at' => $this->updated_at ?? null,
         ];

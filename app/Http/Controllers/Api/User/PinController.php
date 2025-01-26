@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\User;
 
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\UserResource;
 
@@ -22,6 +23,9 @@ class PinController extends Controller
 
         if (!$user) {
             return $this->errorResponse(404, __('auth.user_not_found'));
+        }
+        if ($user->pincode) {
+            return $this->errorResponse(400, __('auth.pin_already_set'));
         }
 
         $user->pincode = $request->pin_code;

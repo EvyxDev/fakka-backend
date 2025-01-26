@@ -272,7 +272,7 @@ class AuthController extends Controller
     }
 
     //delete profile
-    public function VendorDeleteProfile()
+    public function VendorDeleteAccount()
     {
         $vendor = Auth::guard('vendor')->user();
         $vendor->delete();

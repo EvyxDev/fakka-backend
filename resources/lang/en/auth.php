@@ -21,6 +21,8 @@ return [
         'new_pin_must_differ' => 'The new PIN code must be different from the old PIN code.',
         'pin_changed_success' => 'PIN code changed successfully.',
         'account_deleted_success'=>'Account has been deleted successfully',
+        'pin_already_set' => 'PIN code already set.',
+        'account_deleted_success'=>'Account has been deleted successfully',
 
         'validation' => [
                 'errors' => 'Verification errors occurred.',

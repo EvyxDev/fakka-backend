@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\VendorResource;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class PinController extends Controller
 {
@@ -23,7 +24,10 @@ class PinController extends Controller
         if(!$vendor){
             return $this->errorResponse(404, __('auth.vendor_not_found'));
         }
-        $vendor->pincode = request('pin_code');
+        if ($vendor->pincode) {
+            return $this->errorResponse(400, __('auth.pin_already_set'));
+        }
+        $vendor->pincode = $request->pincode;
         $vendor->save();
         return $this->successResponse(201, __('auth.pin_set_success'), new VendorResource($vendor));
     }
@@ -44,7 +48,7 @@ class PinController extends Controller
         if (request('old_pin_code') == request('new_pin_code')) {
             return $this->errorResponse(400, __('auth.incorrect_old_pin'));
         }
-        $vendor->pincode = request('new_pin_code');
+        $vendor->pincode = $request->new_pin_code;
         $vendor->save();
         return $this->successResponse(200, __('auth.pin_changed_success'), new VendorResource($vendor));
     }

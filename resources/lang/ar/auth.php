@@ -20,6 +20,8 @@ return [
         'incorrect_old_pin' => 'رمز PIN القديم غير صحيح.',
         'new_pin_must_differ' => 'يجب أن يكون رمز PIN الجديد مختلفًا عن القديم.',
         'pin_changed_success' => 'تم تغيير رمز PIN بنجاح.',
+        'pin_already_set' => 'تم تعيين رمز PIN بالفعل.',
+        'account_deleted_success'=>'تم حذف الحساب بنجاح',
 
         'validation' => [
                 'errors' => 'حدثت أخطاء في التحقق.',
