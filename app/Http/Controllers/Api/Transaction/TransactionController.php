@@ -230,25 +230,41 @@ class TransactionController extends Controller
     {
         if (auth()->guard('vendor')->check()) {
             $user = auth()->guard('vendor')->user();
-            $notifications = Notification::where('vendor_id', $user->id)->orderBy('created_at', 'desc')->get();
+            $notifications = Notification::where('vendor_id', $user->id)
+                ->orderBy('created_at', 'desc')
+                ->get();
         } elseif (auth()->guard('user')->check()) {
             $user = auth()->guard('user')->user();
-            $notifications = Notification::where('user_id', $user->id)->orderBy('created_at', 'desc')->get();
+            $notifications = Notification::where('user_id', $user->id)
+                ->orderBy('created_at', 'desc')
+                ->get();
         } else {
             return $this->errorResponse(400, __('word.you_are_not_authorized_to_perform_this_action'));
         }
-
-        $formattedNotifications = $notifications->map(function ($notification) {
-            return [
+    
+        $nowNotifications = [];
+        $previousNotifications = [];
+    
+        foreach ($notifications as $notification) {
+            $formattedNotification = [
                 'id' => $notification->id,
                 'type' => $notification->type,
                 'message' => $notification->message,
                 'is_read' => $notification->is_read,
                 'created_at' => $notification->created_at,
             ];
-        });
-        return $this->successResponse(200, __('word.notifications'), [
-            'notifications' => $formattedNotifications,
+    
+            if ($notification->created_at->isToday()) {
+                $nowNotifications[] = $formattedNotification;
+            } else {
+                $previousNotifications[] = $formattedNotification;
+            }
+        }
+            return $this->successResponse(200, __('word.notifications'), [
+            'notifications' => [
+                'now' => $nowNotifications,
+                'previous' => $previousNotifications,
+            ],
         ]);
     }
 }
