@@ -15,4 +15,6 @@ return [
     'qr_code_already_used' => 'رمز الاستجابة السريعة مستخدم بالفعل',
     'transaction_history' => 'سجل المعاملات',
     'you_cannot_send_money_to_yourself' => 'لا يمكنك إرسال الأموال لنفسك',
+    'transactions'=>'المعاملات',
+    'transactions_by_month'=>'المعاملات حسب الشهر',
 ];

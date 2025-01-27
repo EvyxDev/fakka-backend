@@ -15,4 +15,7 @@ return [
     'qr_code_already_used' => 'QR code already used',
     'transaction_history' => 'Transaction history',
     'you_cannot_send_money_to_yourself' => 'You cannot send money to yourself',
+    'transactions'=>'transactions',
+    'transactions_by_month'=>'transactions by month',
+
 ];
