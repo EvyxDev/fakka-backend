@@ -227,48 +227,188 @@ class TransactionController extends Controller
         ]);
     }
 
-   public function getNotifications(Request $request)
-{
-    if (auth()->guard('vendor')->check()) {
-        $user = auth()->guard('vendor')->user();
-        $notifications = Notification::where('vendor_id', $user->id)
-            ->orderBy('created_at', 'desc')
-            ->get();
-    } elseif (auth()->guard('user')->check()) {
-        $user = auth()->guard('user')->user();
-        $notifications = Notification::where('user_id', $user->id)
-            ->orderBy('created_at', 'desc')
-            ->get();
-    } else {
-        return $this->errorResponse(400, __('word.you_are_not_authorized_to_perform_this_action'));
-    }
-
-    $nowNotifications = [];
-    $previousNotifications = [];
-
-    foreach ($notifications as $notification) {
-        $createdAt = Carbon::parse($notification->created_at); // Explicitly parse the date
-
-        $formattedNotification = [
-            'id' => $notification->id,
-            'type' => $notification->type,
-            'message' => $notification->message,
-            'is_read' => $notification->is_read,
-            'created_at' => $createdAt->toDateTimeString(), // Optionally format the date
-        ];
-
-        if ($createdAt->isToday()) {
-            $nowNotifications[] = $formattedNotification;
+    public function getNotifications(Request $request)
+    {
+        if (auth()->guard('vendor')->check()) {
+            $user = auth()->guard('vendor')->user();
+            $notifications = Notification::where('vendor_id', $user->id)
+                ->orderBy('created_at', 'desc')
+                ->get();
+        } elseif (auth()->guard('user')->check()) {
+            $user = auth()->guard('user')->user();
+            $notifications = Notification::where('user_id', $user->id)
+                ->orderBy('created_at', 'desc')
+                ->get();
         } else {
-            $previousNotifications[] = $formattedNotification;
+            return $this->errorResponse(400, __('word.you_are_not_authorized_to_perform_this_action'));
         }
+
+        $nowNotifications = [];
+        $previousNotifications = [];
+
+        foreach ($notifications as $notification) {
+            $createdAt = Carbon::parse($notification->created_at); // Explicitly parse the date
+
+            $formattedNotification = [
+                'id' => $notification->id,
+                'type' => $notification->type,
+                'message' => $notification->message,
+                'is_read' => $notification->is_read,
+                'created_at' => $createdAt->toDateTimeString(), // Optionally format the date
+            ];
+
+            if ($createdAt->isToday()) {
+                $nowNotifications[] = $formattedNotification;
+            } else {
+                $previousNotifications[] = $formattedNotification;
+            }
+        }
+
+        return $this->successResponse(200, __('word.notifications'), [
+            'notifications' => [
+                'now' => $nowNotifications,
+                'previous' => $previousNotifications,
+            ],
+        ]);
     }
 
-    return $this->successResponse(200, __('word.notifications'), [
-        'notifications' => [
-            'now' => $nowNotifications,
-            'previous' => $previousNotifications,
-        ],
-    ]);
-}
+    public function getUserTransactions(Request $request)
+    {
+        if (auth()->guard('vendor')->check()) {
+            $user = auth()->guard('vendor')->user();
+            $userType = 'vendor';
+        } elseif (auth()->guard('user')->check()) {
+            $user = auth()->guard('user')->user();
+            $userType = 'user';
+        } else {
+            return $this->errorResponse(400, __('word.you_are_not_authorized_to_perform_this_action'));
+        }
+    
+        $request->validate([
+            'from_date' => 'required|date',
+            'to_date' => 'required|date|after_or_equal:from_date',
+        ]);
+    
+        $fromDate = Carbon::parse($request->input('from_date'))->startOfDay();
+        $toDate = Carbon::parse($request->input('to_date'))->endOfDay();
+    
+        if ($userType === 'vendor') {
+            $transactions = Transaction::where(function($query) use ($user) {
+                $query->where(function($q) use ($user) {
+                    $q->where('sender_id', $user->id)
+                      ->where('sender_type', 'vendor');
+                })->orWhere(function($q) use ($user) {
+                    $q->where('receiver_id', $user->id)
+                      ->where('receiver_type', 'vendor');
+                });
+            })
+            ->whereBetween('created_at', [$fromDate, $toDate])
+            ->get();
+        } else {
+            $transactions = Transaction::where(function($query) use ($user) {
+                $query->where(function($q) use ($user) {
+                    $q->where('sender_id', $user->id)
+                      ->where('sender_type', 'user');
+                })->orWhere(function($q) use ($user) {
+                    $q->where('receiver_id', $user->id)
+                      ->where('receiver_type', 'user');
+                });
+            })
+            ->whereBetween('created_at', [$fromDate, $toDate])
+            ->get();
+        }
+    
+        $received = $transactions->where('receiver_id', $user->id)->values();
+        $sent = $transactions->where('sender_id', $user->id)->values();
+    
+        $groupedReceived = $received->groupBy(function ($transaction) {
+            return Carbon::parse($transaction->created_at)->format('Y-m-d'); 
+        });
+    
+        $groupedSent = $sent->groupBy(function ($transaction) {
+            return Carbon::parse($transaction->created_at)->format('Y-m-d'); 
+        });
+    
+        // Calculate highest received and sent amounts
+        $highestReceived = $received->max('amount');
+        $highestSent = $sent->max('amount');
+    
+        return $this->successResponse(200, __('word.transactions'), [
+            'transactions' => [
+                'received' => $groupedReceived,
+                'sent' => $groupedSent,
+            ],
+            'highest_received' => $highestReceived,
+            'highest_sent' => $highestSent,
+        ]);
+    }
+    
+
+    public function getUserTransactionsByMonth(Request $request)
+    {
+        if (auth()->guard('vendor')->check()) {
+            $user = auth()->guard('vendor')->user();
+            $userType = 'vendor';
+        } elseif (auth()->guard('user')->check()) {
+            $user = auth()->guard('user')->user();
+            $userType = 'user';
+        } else {
+            return $this->errorResponse(400, __('word.you_are_not_authorized_to_perform_this_action'));
+        }
+
+        $request->validate([
+            'year' => 'required|date_format:Y',
+        ]);
+
+        $year = $request->input('year');
+
+        if ($userType === 'vendor') {
+            $transactions = Transaction::where(function($query) use ($user) {
+                $query->where(function($q) use ($user) {
+                    $q->where('sender_id', $user->id)
+                    ->where('sender_type', 'vendor');
+                })->orWhere(function($q) use ($user) {
+                    $q->where('receiver_id', $user->id)
+                    ->where('receiver_type', 'vendor');
+                });
+            })
+            ->whereYear('created_at', $year)
+            ->get();
+        } else {
+            $transactions = Transaction::where(function($query) use ($user) {
+                $query->where(function($q) use ($user) {
+                    $q->where('sender_id', $user->id)
+                    ->where('sender_type', 'user');
+                })->orWhere(function($q) use ($user) {
+                    $q->where('receiver_id', $user->id)
+                    ->where('receiver_type', 'user');
+                });
+            })
+            ->whereYear('created_at', $year) 
+            ->get();
+        }
+
+        $received = $transactions->where('receiver_id', $user->id)->values();
+        $sent = $transactions->where('sender_id', $user->id)->values();
+
+        $groupedReceived = $received->groupBy(function ($transaction) {
+            return Carbon::parse($transaction->created_at)->format('Y-m'); 
+        });
+
+        $groupedSent = $sent->groupBy(function ($transaction) {
+            return Carbon::parse($transaction->created_at)->format('Y-m'); 
+        });
+
+        $highestReceived = $received->max('amount');
+        $highestSent = $sent->max('amount');
+
+        return $this->successResponse(200, __('word.transactions_by_month'), [
+            'transactions' => [
+                'received' => $groupedReceived,
+                'sent' => $groupedSent,
+            ],
+            'highest_received' => $highestReceived,
+            'highest_sent' => $highestSent,
+        ]);
+    }
 }
