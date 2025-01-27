@@ -290,4 +290,5 @@ class AuthController extends Controller
         $user->delete();
         return $this->successResponse(200, __('auth.account_deleted_success'));
     }
+
 }

@@ -40,6 +40,7 @@ Route::prefix('user')->middleware('Localization')->group(function () {
     Route::post('changePinCode' , [UserPinController::class, 'UserChangePinCode']);
     Route::post('changePinCode' , [UserPinController::class, 'UserChangePinCode']);
     Route::post('delete-account', [UserAuthController::class, 'UserDeleteAccount']);
+    Route::post('verify-pin', [UserPinController::class, 'UserVerifyPinCode']);
 });
 
 
@@ -56,6 +57,7 @@ Route::prefix('vendor')->middleware('Localization')->group(function () {
     Route::post('changePinCode' , [VendorPinController::class, 'VendorChangePinCode']);
     Route::get('profile', [VendorAuthController::class, 'VendorProfile']);
     Route::post('delete-account', [VendorAuthController::class, 'VendorDeleteAccount']);
+    Route::post('verify-pin', [VendorPinController::class, 'VendorVerifyPinCode']);
 });
 
 Route::prefix('Transaction')->group(function () {

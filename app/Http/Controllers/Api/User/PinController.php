@@ -37,12 +37,12 @@ class PinController extends Controller
     // Change PIN code by verifying old PIN code
     public function UserChangePinCode(Request $request)
     {
-        try{
+        try {
             $request->validate([
                 'old_pin_code' => 'required|string|min:6',
                 'new_pin_code' => 'required|string|min:6|confirmed',
             ]);
-        }catch(\Exception $e){
+        } catch (\Exception $e) {
             return $this->errorResponse(400, $e->getMessage());
         }
 
@@ -64,5 +64,20 @@ class PinController extends Controller
         $user->save();
 
         return $this->successResponse(200, __('auth.pin_changed_success'), new UserResource($user));
+    }
+    //verify from pin code
+    public function UserVerifyPinCode(Request $request)
+    {
+        $request->validate([
+            'pin_code' => 'required|string|min:6',
+        ]);
+        $user = auth()->guard('user')->user();
+        if (!$user) {
+            return $this->errorResponse(404, __('auth.user_not_found'));
+        }
+        if ($user->pincode != $request->pin_code) {
+            return $this->errorResponse(400, __('auth.incorrect_pin'));
+        }
+        return $this->successResponse(200, __('auth.pin_verified_success'));
     }
 }

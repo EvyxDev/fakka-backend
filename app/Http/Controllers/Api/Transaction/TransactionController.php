@@ -47,6 +47,7 @@ class TransactionController extends Controller
             ]);
             return $this->successResponse(200, __('word.qr_code_generated_successfully'), [
                 'Qr Code' => $Table,
+                'Remark' => 'We will take %10 of the amount',
             ]);
         } catch (\Exception $e) {
             return $this->errorResponse(400, __('word.something_went_wrong') . $e->getMessage());
