@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Resources\Api\UserResource;
 use App\Http\Resources\Api\VendorResource;
+use Carbon\Carbon;
 
 class TransactionController extends Controller
 {
@@ -226,45 +227,48 @@ class TransactionController extends Controller
         ]);
     }
 
-    public function getNotifications(Request $request)
-    {
-        if (auth()->guard('vendor')->check()) {
-            $user = auth()->guard('vendor')->user();
-            $notifications = Notification::where('vendor_id', $user->id)
-                ->orderBy('created_at', 'desc')
-                ->get();
-        } elseif (auth()->guard('user')->check()) {
-            $user = auth()->guard('user')->user();
-            $notifications = Notification::where('user_id', $user->id)
-                ->orderBy('created_at', 'desc')
-                ->get();
-        } else {
-            return $this->errorResponse(400, __('word.you_are_not_authorized_to_perform_this_action'));
-        }
-    
-        $nowNotifications = [];
-        $previousNotifications = [];
-    
-        foreach ($notifications as $notification) {
-            $formattedNotification = [
-                'id' => $notification->id,
-                'type' => $notification->type,
-                'message' => $notification->message,
-                'is_read' => $notification->is_read,
-                'created_at' => $notification->created_at,
-            ];
-    
-            if ($notification->created_at->isToday()) {
-                $nowNotifications[] = $formattedNotification;
-            } else {
-                $previousNotifications[] = $formattedNotification;
-            }
-        }
-            return $this->successResponse(200, __('word.notifications'), [
-            'notifications' => [
-                'now' => $nowNotifications,
-                'previous' => $previousNotifications,
-            ],
-        ]);
+   public function getNotifications(Request $request)
+{
+    if (auth()->guard('vendor')->check()) {
+        $user = auth()->guard('vendor')->user();
+        $notifications = Notification::where('vendor_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+    } elseif (auth()->guard('user')->check()) {
+        $user = auth()->guard('user')->user();
+        $notifications = Notification::where('user_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+    } else {
+        return $this->errorResponse(400, __('word.you_are_not_authorized_to_perform_this_action'));
     }
+
+    $nowNotifications = [];
+    $previousNotifications = [];
+
+    foreach ($notifications as $notification) {
+        $createdAt = Carbon::parse($notification->created_at); // Explicitly parse the date
+
+        $formattedNotification = [
+            'id' => $notification->id,
+            'type' => $notification->type,
+            'message' => $notification->message,
+            'is_read' => $notification->is_read,
+            'created_at' => $createdAt->toDateTimeString(), // Optionally format the date
+        ];
+
+        if ($createdAt->isToday()) {
+            $nowNotifications[] = $formattedNotification;
+        } else {
+            $previousNotifications[] = $formattedNotification;
+        }
+    }
+
+    return $this->successResponse(200, __('word.notifications'), [
+        'notifications' => [
+            'now' => $nowNotifications,
+            'previous' => $previousNotifications,
+        ],
+    ]);
+}
 }
