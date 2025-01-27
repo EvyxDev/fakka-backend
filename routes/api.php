@@ -9,6 +9,8 @@ use App\Http\Controllers\Api\User\PinController as UserPinController;
 use App\Http\Controllers\Api\User\AuthController as UserAuthController;
 use App\Http\Controllers\Api\Vendor\PinController as VendorPinController;
 use App\Http\Controllers\Api\Vendor\AuthController as VendorAuthController;
+use App\Http\Controllers\Api\Brand\BrandController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -67,4 +69,11 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     });
     Route::get('business', [BussinessController::class, 'index']);
     Route::get('notifications', [TransactionController::class, 'getNotifications']);
+    
+    Route::get('/user/transactions', [TransactionController::class, 'getUserTransactions']);
+    Route::get('/user/transactions-by-month', [TransactionController::class, 'getUserTransactionsByMonth']);
+
+    Route::post('/brands', [BrandController::class, 'storeBrand']);
+    Route::get('/brands', [BrandController::class, 'indexBrand']);
+
 // });
