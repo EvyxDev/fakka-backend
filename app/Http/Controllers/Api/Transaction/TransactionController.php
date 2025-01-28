@@ -28,31 +28,38 @@ class TransactionController extends Controller
         if ($validator->fails()) {
             return $this->errorResponse(422, 'Validation errors', $validator->errors());
         }
+    
         if (auth()->guard('vendor')->check()) {
             $user = auth()->guard('vendor')->user();
+            $model_of_sender = 'vendor'; 
         } elseif (auth()->guard('user')->check()) {
             $user = auth()->guard('user')->user();
+            $model_of_sender = 'user'; 
         } else {
             return $this->errorResponse(400, __('word.you_are_not_authorized_to_perform_this_action'));
         }
-
+    
         try {
             $amount = $request->input('amount');
             $qrCode = Str::random(20);
-            $Table = QrCode::create([
-                'user_id' => $user instanceof User ? $user->id : null,
-                'vendor_id' => $user instanceof Vendor ? $user->id : null,
+    
+            $qrCodeRecord = QrCode::create([
+                'sender_id' => $user->id,
+                'model_of_sender' => $model_of_sender,
                 'qr_code' => $qrCode,
                 'amount' => $amount,
+                'status' => 'active', 
             ]);
+    
             return $this->successResponse(200, __('word.qr_code_generated_successfully'), [
-                'Qr Code' => $Table,
+                'Qr Code' => $qrCodeRecord,
                 'Remark' => 'We will take %10 of the amount',
             ]);
         } catch (\Exception $e) {
             return $this->errorResponse(400, __('word.something_went_wrong') . $e->getMessage());
         }
     }
+    
     public function scanQrCode(Request $request)
     {
         $validator = Validator::make($request->all(), [
