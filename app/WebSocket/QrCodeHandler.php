@@ -32,7 +32,8 @@ class QrCodeHandler implements MessageComponentInterface
     public function onMessage(ConnectionInterface $from, $msg)
     {
         $data = json_decode($msg, true);
-    
+
+        // Check if it's a user registration
         if (isset($data['user_id'])) {
             $this->userConnections[$data['user_id']] = $from;
             $from->send(json_encode([
@@ -42,103 +43,104 @@ class QrCodeHandler implements MessageComponentInterface
             ]));
             return;
         }
-    
+
+        // If QR code is provided
         if (isset($data['qr_code'])) {
             $qrCode = $data['qr_code'];
             $qrCodeData = QrCode::where('qr_code', $qrCode)->first();
-    
+
             if (!$qrCodeData) {
                 $from->send(json_encode(['success' => false, 'message' => 'QR Code not found!']));
                 return;
             }
-    
+
             if ($qrCodeData->status !== 'active') {
                 $from->send(json_encode(['success' => false, 'message' => 'QR Code already used!']));
                 return;
             }
-    
+
             try {
                 DB::beginTransaction();
-    
+
                 $receiverId = $data['receiver_id'];
                 $receiver = $this->getUserOrVendor($receiverId);
-    
+
                 if (!$receiver) {
                     $from->send(json_encode(['success' => false, 'message' => 'Receiver not authorized!']));
                     return;
                 }
-    
+
                 // Determine the sender based on model_of_sender
                 $sender = $this->getSenderFromQrCodeData($qrCodeData);
-    
+
                 if (!$sender) {
                     $from->send(json_encode(['success' => false, 'message' => 'Sender not found!']));
                     return;
                 }
-    
+
                 if ($sender->id == $receiver->id) {
                     $from->send(json_encode(['success' => false, 'message' => 'Cannot send money to yourself!']));
                     return;
                 }
-    
+
                 if ($sender->balance < $qrCodeData->amount) {
                     $from->send(json_encode(['success' => false, 'message' => 'Insufficient balance!']));
                     return;
                 }
-    
+
                 $feeAmount = $qrCodeData->amount * 0.10;
                 $transactionAmount = $qrCodeData->amount - $feeAmount;
-    
+
                 $sender->balance -= $qrCodeData->amount;
                 $sender->save();
-    
+
                 $receiver->balance += $transactionAmount;
                 $receiver->save();
-    
+
                 $transaction = Transaction::create([
                     'sender_id' => $sender->id,
-                    'sender_type' => $qrCodeData->model_of_sender, // Using the model_of_sender
+                    'sender_type' => $qrCodeData->model_of_sender, 
                     'receiver_id' => $receiver->id,
                     'receiver_type' => $receiver instanceof User ? 'user' : 'vendor',
                     'amount' => $qrCodeData->amount,
                     'status' => 'completed',
                 ]);
-    
+
                 if ($feeAmount > 0) {
                     Fee::create(['transaction_id' => $transaction->id, 'amount' => $feeAmount]);
                 }
-    
+
                 Notification::create([
                     'user_id' => $sender instanceof User ? $sender->id : null,
                     'vendor_id' => $sender instanceof Vendor ? $sender->id : null,
                     'type' => 'transaction_sent',
                     'message' => 'You sent ' . $qrCodeData->amount . ' to ' . $receiver->name,
                 ]);
-    
+
                 Notification::create([
                     'user_id' => $receiver instanceof User ? $receiver->id : null,
                     'vendor_id' => $receiver instanceof Vendor ? $receiver->id : null,
                     'type' => 'transaction_received',
                     'message' => 'You received ' . $qrCodeData->amount . ' from ' . $sender->name,
                 ]);
-    
+
                 $qrCodeData->receiver_id = $receiver->id; 
                 $qrCodeData->model_of_receiver = $receiver instanceof User ? 'user' : 'vendor';
                 $qrCodeData->status = 'used';
                 $qrCodeData->save();
-    
-                // Notify sender
+
+                // Notify sender that their QR code was scanned
                 if (isset($this->userConnections[$sender->id])) {
                     $this->userConnections[$sender->id]->send(json_encode([
                         'success' => true,
-                        'message' => 'Your QR code has been used successfully.',
+                        'message' => 'Your QR code has been scanned and used successfully.',
                         'qr_code' => $qrCode,
                         'amount' => $qrCodeData->amount,
                     ]));
                 }
-    
+
                 DB::commit();
-    
+
                 $from->send(json_encode([
                     'success' => true,
                     'message' => 'Transaction successful!',
@@ -151,10 +153,10 @@ class QrCodeHandler implements MessageComponentInterface
             }
             return;
         }
-    
+
         $from->send(json_encode(['success' => false, 'message' => 'Invalid request!']));
     }
-    
+
 
     public function onClose(ConnectionInterface $conn)
     {

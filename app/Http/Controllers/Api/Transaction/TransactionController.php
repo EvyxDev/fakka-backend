@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Http\Resources\Api\UserResource;
 use App\Http\Resources\Api\VendorResource;
 use Carbon\Carbon;
-
+use Carbon\CarbonPeriod;
 class TransactionController extends Controller
 {
 
@@ -328,25 +328,30 @@ class TransactionController extends Controller
         $received = $transactions->where('receiver_id', $user->id)->values();
         $sent = $transactions->where('sender_id', $user->id)->values();
     
-        $groupedReceived = $received->groupBy(function ($transaction) {
-            return Carbon::parse($transaction->created_at)->format('Y-m-d'); 
+        // إنشاء قائمة بالأيام بين from_date و to_date
+        $days = collect(CarbonPeriod::create($fromDate, $toDate))->map(function ($date) {
+            return $date->format('Y-m-d');
         });
     
-        $groupedSent = $sent->groupBy(function ($transaction) {
-            return Carbon::parse($transaction->created_at)->format('Y-m-d'); 
+        // تجميع الـ received لكل يوم
+        $groupedReceived = $days->map(function ($day) use ($received) {
+            return $received->filter(function ($transaction) use ($day) {
+                return Carbon::parse($transaction->created_at)->format('Y-m-d') === $day;
+            })->sum('amount');
         });
     
-        // Calculate highest received and sent amounts
-        $highestReceived = $received->max('amount');
-        $highestSent = $sent->max('amount');
+        // تجميع الـ sent لكل يوم
+        $groupedSent = $days->map(function ($day) use ($sent) {
+            return $sent->filter(function ($transaction) use ($day) {
+                return Carbon::parse($transaction->created_at)->format('Y-m-d') === $day;
+            })->sum('amount');
+        });
     
         return $this->successResponse(200, __('word.transactions'), [
             'transactions' => [
-                'received' => $groupedReceived,
-                'sent' => $groupedSent,
+                'received' => $groupedReceived->values(),
+                'sent' => $groupedSent->values(),
             ],
-            'highest_received' => $highestReceived,
-            'highest_sent' => $highestSent,
         ]);
     }
     
@@ -391,31 +396,37 @@ class TransactionController extends Controller
                     ->where('receiver_type', 'user');
                 });
             })
-            ->whereYear('created_at', $year) 
+            ->whereYear('created_at', $year)
             ->get();
         }
 
         $received = $transactions->where('receiver_id', $user->id)->values();
         $sent = $transactions->where('sender_id', $user->id)->values();
 
-        $groupedReceived = $received->groupBy(function ($transaction) {
-            return Carbon::parse($transaction->created_at)->format('Y-m'); 
+        // إنشاء قائمة بالأشهر للسنة المحددة
+        $months = collect(range(1, 12))->map(function ($month) use ($year) {
+            return Carbon::createFromDate($year, $month, 1)->format('Y-m');
         });
 
-        $groupedSent = $sent->groupBy(function ($transaction) {
-            return Carbon::parse($transaction->created_at)->format('Y-m'); 
+        // تجميع الـ received لكل شهر
+        $groupedReceived = $months->map(function ($month) use ($received) {
+            return $received->filter(function ($transaction) use ($month) {
+                return Carbon::parse($transaction->created_at)->format('Y-m') === $month;
+            })->sum('amount');
         });
 
-        $highestReceived = $received->max('amount');
-        $highestSent = $sent->max('amount');
+        // تجميع الـ sent لكل شهر
+        $groupedSent = $months->map(function ($month) use ($sent) {
+            return $sent->filter(function ($transaction) use ($month) {
+                return Carbon::parse($transaction->created_at)->format('Y-m') === $month;
+            })->sum('amount');
+        });
 
         return $this->successResponse(200, __('word.transactions_by_month'), [
             'transactions' => [
-                'received' => $groupedReceived,
-                'sent' => $groupedSent,
+                'received' => $groupedReceived->values(),
+                'sent' => $groupedSent->values(),
             ],
-            'highest_received' => $highestReceived,
-            'highest_sent' => $highestSent,
         ]);
     }
 }
