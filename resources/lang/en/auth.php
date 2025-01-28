@@ -26,4 +26,6 @@ return [
         'validation' => [
                 'errors' => 'Verification errors occurred.',
         ],
+        'user_not_found' =>'User Not Found',
+        'user_found' =>'User Found',
 ];

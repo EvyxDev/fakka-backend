@@ -95,7 +95,6 @@ class TransactionController extends Controller
         if ($sender->balance < $qrCodeData->amount) {
             return $this->errorResponse(400, __('word.insufficient_balance'));
         }
-
         // if ($sender instanceof User && $receiver instanceof User) {
         //     return $this->errorResponse(400, __('word.a_user_cannot_send_money_to_another_user'));
         // }

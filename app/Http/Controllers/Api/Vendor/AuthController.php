@@ -278,5 +278,13 @@ class AuthController extends Controller
         $vendor->delete();
         return $this->successResponse(200, __('auth.account_deleted_success'));
     }
-
+    public function VendorTokenCheck()
+    {
+        $user = auth()->guard('vendor')->user();
+        if (!$user) {
+            return $this->errorResponse(404, __('auth.user_not_found'));
+        } else {
+            return $this->successResponse(200, __('auth.user_found'));
+        }
+    }
 }

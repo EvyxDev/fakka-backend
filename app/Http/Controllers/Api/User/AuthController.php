@@ -43,7 +43,7 @@ class AuthController extends Controller
         $user = User::create([
             'name' => $request->name,
             'phone' => $request->phone,
-            'phonecode'=>$request->phonecode,
+            'phonecode' => $request->phonecode,
             'password' => Hash::make($request->password),
         ]);
 
@@ -65,7 +65,7 @@ class AuthController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'phone' => 'required|string',
-            'phonecode' => 'required|string', 
+            'phonecode' => 'required|string',
             'password' => 'required|string',
         ]);
 
@@ -74,17 +74,17 @@ class AuthController extends Controller
         }
 
         $user = User::where('phone', $request->phone)
-                    ->where('phonecode', $request->phonecode)
-                    ->first();
+            ->where('phonecode', $request->phonecode)
+            ->first();
 
-        
+
         if (!$user) {
             return $this->errorResponse(404, __('auth.user_not_found'));
         }
 
         if ($user->phone_verified_at == null) {
             return $this->successResponse(200, __('auth.phone_not_verified'), [
-                'token' =>null,
+                'token' => null,
             ]);
         }
 
@@ -92,7 +92,7 @@ class AuthController extends Controller
             return $this->errorResponse(401, __('auth.invalid_credentials'));
         }
         $user = User::where('phone', $request->phone)->first();
-        
+
         if ($user->phone_verified_at == null) {
             return $this->errorResponse(401, __('auth.phone_not_verified'));
         }
@@ -117,7 +117,7 @@ class AuthController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'phone' => 'required|string',
-            'phonecode' => 'required|string', 
+            'phonecode' => 'required|string',
             'otp' => 'required|string',
         ]);
 
@@ -126,8 +126,8 @@ class AuthController extends Controller
         }
 
         $user = User::where('phone', $request->phone)
-                    ->where('phonecode', $request->phonecode)
-                    ->first();
+            ->where('phonecode', $request->phonecode)
+            ->first();
 
         if (!$user) {
             return $this->errorResponse(404, __('auth.user_not_found'));
@@ -162,26 +162,26 @@ class AuthController extends Controller
             'phone' => 'required|string',
             'phonecode' => 'required|string', // Add phonecode validation
         ]);
-    
+
         if ($validator->fails()) {
             return $this->errorResponse(422, __('validation.errors'), $validator->errors());
         }
-    
+
         // Find the user by phone and phonecode
         $user = User::where('phone', $request->phone)
-                    ->where('phonecode', $request->phonecode)
-                    ->first();
-    
+            ->where('phonecode', $request->phonecode)
+            ->first();
+
         // Check if the user exists
         if (!$user) {
             return $this->errorResponse(404, __('auth.user_not_found'));
         }
-    
+
         // Generate and send OTP
         $otpService = new Otp();
         $phone = $user->phone;
         $otpService->generate($phone, 'numeric', 4, 10);
-    
+
         return $this->successResponse(200, __('auth.otp_sent'), ['phone' => $phone]);
     }
 
@@ -200,8 +200,8 @@ class AuthController extends Controller
 
         // Find the user by phone and phonecode
         $user = User::where('phone', $request->phone)
-                    ->where('phonecode', $request->phonecode)
-                    ->first();
+            ->where('phonecode', $request->phonecode)
+            ->first();
 
         // Check if the user exists
         if (!$user) {
@@ -232,8 +232,8 @@ class AuthController extends Controller
 
         // Find the user by phone and phonecode
         $user = User::where('phone', $request->phone)
-                    ->where('phonecode', $request->phonecode)
-                    ->first();
+            ->where('phonecode', $request->phonecode)
+            ->first();
 
         // Check if the user exists
         if (!$user) {
@@ -290,5 +290,14 @@ class AuthController extends Controller
         $user->delete();
         return $this->successResponse(200, __('auth.account_deleted_success'));
     }
-
+    // check if user authenticated
+    public function UserTokenCheck()
+    {
+        $user = Auth::user();
+        if (!$user) {
+            return $this->errorResponse(404, __('auth.user_not_found'));
+        } else {
+            return $this->successResponse(200, __('auth.user_found'));
+        }
+    }
 }
