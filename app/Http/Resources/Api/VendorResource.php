@@ -26,7 +26,7 @@ class VendorResource extends JsonResource
             'profile_image' => $profileImageUrl,
             'business_id' => $this->business_id ?? null,
             'balance' => $this->balance ?? null,
-            'pincode' => $isPinSet,
+            'pin_code' => $isPinSet,
             'created_at' => $this->created_at ?? null,
             'updated_at' => $this->updated_at ?? null,
         ];
