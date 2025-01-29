@@ -22,7 +22,7 @@ class PinController extends Controller
         $user = auth()->user();
 
         if (!$user) {
-            return $this->errorResponse(404, __('auth.user_not_found'));
+            return $this->errorResponse(401, __('auth.user_not_found'));
         }
         if ($user->pincode) {
             return $this->errorResponse(400, __('auth.pin_already_set'));
@@ -49,7 +49,7 @@ class PinController extends Controller
         $user = auth()->user();
 
         if (!$user) {
-            return $this->errorResponse(404, __('auth.user_not_found'));
+            return $this->errorResponse(401, __('auth.user_not_found'));
         }
 
         if ($user->pincode != $request->old_pin_code) {
@@ -73,7 +73,7 @@ class PinController extends Controller
         ]);
         $user = auth()->guard('user')->user();
         if (!$user) {
-            return $this->errorResponse(404, __('auth.user_not_found'));
+            return $this->errorResponse(401, __('auth.user_not_found'));
         }
         if ($user->pincode != $request->pin_code) {
             return $this->errorResponse(400, __('auth.incorrect_pin'));

@@ -36,7 +36,7 @@ class TransactionController extends Controller
             $user = auth()->guard('user')->user();
             $model_of_sender = 'user'; 
         } else {
-            return $this->errorResponse(400, __('word.you_are_not_authorized_to_perform_this_action'));
+            return $this->errorResponse(401, __('word.you_are_not_authorized_to_perform_this_action'));
         }
     
         try {
@@ -56,10 +56,10 @@ class TransactionController extends Controller
                 'Remark' => 'We will take %10 of the amount',
             ]);
         } catch (\Exception $e) {
-            return $this->errorResponse(400, __('word.something_went_wrong') . $e->getMessage());
+            return $this->errorResponse(401, __('word.something_went_wrong') . $e->getMessage());
         }
     }
-    
+    // convert this to web sokcet
     public function scanQrCode(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -74,11 +74,11 @@ class TransactionController extends Controller
         $qrCodeData = QrCode::where('qr_code', $qrCode)->first();
 
         if (!$qrCodeData) {
-            return $this->errorResponse(400, __('word.qr_code_not_found'));
+            return $this->errorResponse(401, __('word.qr_code_not_found'));
         }
 
         if ($qrCodeData->status !== 'active') {
-            return $this->errorResponse(400, __('word.qr_code_already_used'));
+            return $this->errorResponse(401, __('word.qr_code_already_used'));
         }
 
         if (auth()->guard('vendor')->check()) {
@@ -86,7 +86,7 @@ class TransactionController extends Controller
         } elseif (auth()->guard('user')->check()) {
             $receiver = auth()->guard('user')->user();
         } else {
-            return $this->errorResponse(400, __('word.you_are_not_authorized_to_perform_this_action'));
+            return $this->errorResponse(401, __('word.you_are_not_authorized_to_perform_this_action'));
         }
 
         if ($qrCodeData->user_id) {
@@ -96,20 +96,20 @@ class TransactionController extends Controller
         }
 
         if (!$sender) {
-            return $this->errorResponse(400, __('word.sender_not_found'));
+            return $this->errorResponse(401, __('word.sender_not_found'));
         }
 
         if ($sender->balance < $qrCodeData->amount) {
-            return $this->errorResponse(400, __('word.insufficient_balance'));
+            return $this->errorResponse(401, __('word.insufficient_balance'));
         }
         // if ($sender instanceof User && $receiver instanceof User) {
-        //     return $this->errorResponse(400, __('word.a_user_cannot_send_money_to_another_user'));
+        //     return $this->errorResponse(401, __('word.a_user_cannot_send_money_to_another_user'));
         // }
         // if ($sender instanceof Vendor && $receiver instanceof Vendor) {
-        //     return $this->errorResponse(400, __('word.a_vendor_cannot_send_money_to_another_vendor'));
+        //     return $this->errorResponse(401, __('word.a_vendor_cannot_send_money_to_another_vendor'));
         // }
         if ($sender->id == $receiver->id) {
-            return $this->errorResponse(400, __('word.you_cannot_send_money_to_yourself'));
+            return $this->errorResponse(401, __('word.you_cannot_send_money_to_yourself'));
         }
 
         DB::beginTransaction();
@@ -173,7 +173,7 @@ class TransactionController extends Controller
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
-            return $this->errorResponse(400, 'An error occurred while processing the transaction: ' . $e->getMessage());
+            return $this->errorResponse(401, 'An error occurred while processing the transaction: ' . $e->getMessage());
         }
     }
     public function transactionHistory(Request $request)
@@ -186,7 +186,7 @@ class TransactionController extends Controller
             $user = auth()->guard('user')->user();
             $userType = 'user';
         } else {
-            return $this->errorResponse(400, __('word.you_are_not_authorized_to_perform_this_action'));
+            return $this->errorResponse(401, __('word.you_are_not_authorized_to_perform_this_action'));
         }
         $perPage = $validated['per_page'] ?? 5;
 
@@ -247,7 +247,7 @@ class TransactionController extends Controller
                 ->orderBy('created_at', 'desc')
                 ->get();
         } else {
-            return $this->errorResponse(400, __('word.you_are_not_authorized_to_perform_this_action'));
+            return $this->errorResponse(401, __('word.you_are_not_authorized_to_perform_this_action'));
         }
 
         $nowNotifications = [];
@@ -288,7 +288,7 @@ class TransactionController extends Controller
             $user = auth()->guard('user')->user();
             $userType = 'user';
         } else {
-            return $this->errorResponse(400, __('word.you_are_not_authorized_to_perform_this_action'));
+            return $this->errorResponse(401, __('word.you_are_not_authorized_to_perform_this_action'));
         }
     
         $request->validate([
@@ -365,7 +365,7 @@ class TransactionController extends Controller
             $user = auth()->guard('user')->user();
             $userType = 'user';
         } else {
-            return $this->errorResponse(400, __('word.you_are_not_authorized_to_perform_this_action'));
+            return $this->errorResponse(401, __('word.you_are_not_authorized_to_perform_this_action'));
         }
 
         $request->validate([

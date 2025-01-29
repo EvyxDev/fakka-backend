@@ -76,7 +76,7 @@ class AuthController extends Controller
             ->first();
 
         if (!$vendor) {
-            return $this->errorResponse(404, __('auth.vendor_not_found'));
+            return $this->errorResponse(401, __('auth.vendor_not_found'));
         }
 
         // Validate the OTP
@@ -99,7 +99,7 @@ class AuthController extends Controller
             ]);
         }
 
-        return $this->errorResponse(400, __('auth.invalid_otp'));
+        return $this->errorResponse(401, __('auth.invalid_otp'));
     }
     // Login vendor
     public function VendorLogin(Request $request)
@@ -165,7 +165,7 @@ class AuthController extends Controller
             ->first();
 
         if (!$vendor) {
-            return $this->errorResponse(404, __('auth.vendor_not_found'));
+            return $this->errorResponse(401, __('auth.vendor_not_found'));
         }
 
         $otpService = new Otp();
@@ -192,7 +192,7 @@ class AuthController extends Controller
             ->first();
 
         if (!$vendor) {
-            return $this->errorResponse(404, __('auth.vendor_not_found'));
+            return $this->errorResponse(401, __('auth.vendor_not_found'));
         }
 
         // Generate and send OTP
@@ -222,7 +222,7 @@ class AuthController extends Controller
             ->first();
 
         if (!$vendor) {
-            return $this->errorResponse(404, __('auth.vendor_not_found'));
+            return $this->errorResponse(401, __('auth.vendor_not_found'));
         }
 
         $vendor->password = Hash::make($request->password);
@@ -247,7 +247,7 @@ class AuthController extends Controller
         $vendor = Auth::guard('vendor')->user();
 
         if (!$vendor) {
-            return $this->errorResponse(404, __('auth.vendor_not_found'));
+            return $this->errorResponse(401, __('auth.vendor_not_found'));
         }
 
         if (!Hash::check($request->old_password, $vendor->password)) {
@@ -282,7 +282,7 @@ class AuthController extends Controller
     {
         $user = auth()->guard('vendor')->user();
         if (!$user) {
-            return $this->errorResponse(404, __('auth.user_not_found'));
+            return $this->errorResponse(401, __('auth.user_not_found'));
         } else {
             return $this->successResponse(200, __('auth.user_found'));
         }

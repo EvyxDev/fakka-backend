@@ -22,7 +22,7 @@ class PinController extends Controller
         ]);
         $vendor = Auth::guard('vendor')->user();
         if (!$vendor) {
-            return $this->errorResponse(404, __('auth.vendor_not_found'));
+            return $this->errorResponse(401, __('auth.vendor_not_found'));
         }
         if ($vendor->pincode) {
             return $this->errorResponse(400, __('auth.pin_already_set'));
@@ -40,7 +40,7 @@ class PinController extends Controller
         ]);
         $vendor = Auth::guard('vendor')->user();
         if (!$vendor) {
-            return $this->errorResponse(404, __('auth.vendor_not_found'));
+            return $this->errorResponse(401, __('auth.vendor_not_found'));
         }
         if ($vendor->pincode != request('old_pin_code')) {
             return $this->errorResponse(400, __('auth.incorrect_old_pin'));
@@ -60,7 +60,7 @@ class PinController extends Controller
         ]);
         $vendor = auth()->guard('vendor')->user();
         if (!$vendor) {
-            return $this->errorResponse(404, __('auth.user_not_found'));
+            return $this->errorResponse(401, __('auth.user_not_found'));
         }
         if ($vendor->pincode != $request->pin_code) {
             return $this->errorResponse(400, __('auth.incorrect_pin'));
