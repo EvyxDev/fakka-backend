@@ -79,7 +79,7 @@ class AuthController extends Controller
 
 
         if (!$user) {
-            return $this->errorResponse(404, __('auth.user_not_found'));
+            return $this->errorResponse(401, __('auth.user_not_found'));
         }
 
         if ($user->phone_verified_at == null) {
@@ -130,7 +130,7 @@ class AuthController extends Controller
             ->first();
 
         if (!$user) {
-            return $this->errorResponse(404, __('auth.user_not_found'));
+            return $this->errorResponse(401, __('auth.user_not_found'));
         }
 
         $otpService = new Otp();
@@ -151,7 +151,7 @@ class AuthController extends Controller
             ]);
         }
 
-        return $this->errorResponse(400, __('auth.invalid_otp'));
+        return $this->errorResponse(401, __('auth.invalid_otp'));
     }
 
     // Resend OTP
@@ -174,7 +174,7 @@ class AuthController extends Controller
 
         // Check if the user exists
         if (!$user) {
-            return $this->errorResponse(404, __('auth.user_not_found'));
+            return $this->errorResponse(401, __('auth.user_not_found'));
         }
 
         // Generate and send OTP
@@ -205,7 +205,7 @@ class AuthController extends Controller
 
         // Check if the user exists
         if (!$user) {
-            return $this->errorResponse(404, __('auth.user_not_found'));
+            return $this->errorResponse(401, __('auth.user_not_found'));
         }
 
         // Generate and send OTP
@@ -219,7 +219,6 @@ class AuthController extends Controller
     // Reset password
     public function UserResetPassword(Request $request)
     {
-        // Validate user input
         $validator = Validator::make($request->all(), [
             'phone' => 'required|string',
             'phonecode' => 'required|string', // Add phonecode validation
@@ -230,17 +229,14 @@ class AuthController extends Controller
             return $this->errorResponse(422, __('validation.errors'), $validator->errors());
         }
 
-        // Find the user by phone and phonecode
         $user = User::where('phone', $request->phone)
             ->where('phonecode', $request->phonecode)
             ->first();
 
-        // Check if the user exists
         if (!$user) {
-            return $this->errorResponse(404, __('auth.user_not_found'));
+            return $this->errorResponse(401, __('auth.user_not_found'));
         }
 
-        // Update the user's password
         $user->password = Hash::make($request->password);
         $user->save();
 
@@ -261,15 +257,15 @@ class AuthController extends Controller
         $user = Auth::user();
 
         if (!$user) {
-            return $this->errorResponse(404, __('auth.user_not_found'));
+            return $this->errorResponse(401, __('auth.user_not_found'));
         }
 
         if (!Hash::check($request->old_password, $user->password)) {
-            return $this->errorResponse(400, __('auth.invalid_old_password'));
+            return $this->errorResponse(401, __('auth.invalid_old_password'));
         }
 
         if (Hash::check($request->new_password, $user->password)) {
-            return $this->errorResponse(400, __('auth.new_password_must_be_different'));
+            return $this->errorResponse(401, __('auth.new_password_must_be_different'));
         }
 
         $user->password = Hash::make($request->new_password);
