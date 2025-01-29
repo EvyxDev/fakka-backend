@@ -27,6 +27,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
+Route::get('/get-user-or-vendor', [UserAuthController::class, 'getUserOrVendor']);
 
 // Route::middleware(['auth:api', 'Check.token.expiration'])->group(function () {
     Route::prefix('user')->middleware('Localization')->group(function () {

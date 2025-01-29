@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\User;
 
 use Carbon\Carbon;
 use App\Models\User;
+use App\Models\Vendor;
 use Ichtrojan\Otp\Otp;
 use App\Models\Voucher;
 use App\Traits\ApiResponse;
@@ -300,4 +301,33 @@ class AuthController extends Controller
             return $this->successResponse(200, __('auth.user_found'));
         }
     }
+
+
+    public function getUserOrVendor(Request $request)
+    {
+        $request->validate([
+            'id' => 'required|integer',
+            'type' => 'required|in:user,vendor'
+        ]);
+
+        if ($request->type === 'user') {
+            $user = User::find($request->id);
+            if (!$user) {
+                return $this->errorResponse(404, __('auth.user_not_found'));
+            }
+            $user->profile_image = $user->profile_image ? url($user->profile_image) : null;
+            return $this->successResponse(200, __('auth.user_found'), $user);
+        }
+
+        if ($request->type === 'vendor') {
+            $vendor = Vendor::find($request->id);
+            if (!$vendor) {
+                return $this->errorResponse(404, __('auth.user_not_found'));
+            }
+            $vendor->profile_image = $vendor->profile_image ? url($vendor->profile_image) : null;
+            return $this->successResponse(200, __('auth.user_found'), $vendor);
+        }
+    }
+
+
 }
