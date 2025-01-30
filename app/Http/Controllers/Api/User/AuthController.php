@@ -90,7 +90,7 @@ class AuthController extends Controller
         }
 
         if (!Auth::attempt(['phone' => $request->phone, 'password' => $request->password])) {
-            return $this->errorResponse(401, __('auth.invalid_credentials'));
+            return $this->errorResponse(400, __('auth.invalid_credentials'));
         }
         $user = User::where('phone', $request->phone)->first();
 

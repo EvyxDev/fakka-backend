@@ -101,7 +101,7 @@ class AuthController extends Controller
             'phonecode' => 'required|string',
             'password' => 'required|string',
         ]);
-        
+
         if ($validator->fails()) {
             return $this->errorResponse(422, __('validation.errors'), $validator->errors());
         }
@@ -111,24 +111,30 @@ class AuthController extends Controller
             ->first();
 
 
-        $credentials = $request->only('phone', 'password');
-
-        if (!Auth::guard('vendor')->attempt($credentials)) {
-            return $this->errorResponse(401, __('auth.vendor_not_found'));
+        if (!$vendor) {
+            return $this->errorResponse(404, __('auth.vendor_not_found'));
         }
-
-        $vendor = Auth::guard('vendor')->user();
 
         if ($vendor->phone_verified_at == null) {
             return $this->successResponse(200, __('auth.phone_not_verified'), [
                 'token' => null,
             ]);
         }
+
+        if (!Auth::attempt(['phone' => $request->phone, 'password' => $request->password])) {
+            return $this->errorResponse(400, __('auth.invalid_credentials'));
+        }
+        $vendor = Vendor::where('phone', $request->phone)->first();
+
+        if ($vendor->phone_verified_at == null) {
+            return $this->errorResponse(401, __('auth.phone_not_verified'));
+        }
+
         $token = JWTAuth::fromUser($vendor);
 
         return $this->successResponse(200, __('auth.login_success'), [
             'token' => $token,
-            'user' => new VendorResource($vendor),
+            'vendor' => new VendorResource($vendor),
         ]);
     }
 
