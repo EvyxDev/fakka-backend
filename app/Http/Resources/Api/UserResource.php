@@ -27,7 +27,7 @@ class UserResource extends JsonResource
             'phone' => $this->phone ?? null,
             'profile_image' => $profileImageUrl,
             'balance' => $this->balance ?? null,
-            'pincode' => $isPinSet,
+            'pin_code' => $isPinSet,
             'created_at' => $this->created_at ?? null,
             'updated_at' => $this->updated_at ?? null,
         ];

@@ -84,7 +84,7 @@ class AuthController extends Controller
         }
 
         if ($user->phone_verified_at == null) {
-            return $this->successResponse(401, __('auth.phone_not_verified'), [
+            return $this->successResponse(200, __('auth.phone_not_verified'), [
                 'token' => null,
             ]);
         }

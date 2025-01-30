@@ -111,7 +111,6 @@ class AuthController extends Controller
             ->first();
 
 
-
         $credentials = $request->only('phone', 'password');
 
         if (!Auth::guard('vendor')->attempt($credentials)) {
@@ -120,8 +119,10 @@ class AuthController extends Controller
 
         $vendor = Auth::guard('vendor')->user();
 
-		if ($vendor->phone_verified_at == null) {
-            return $this->errorResponse(401, __('auth.phone_not_verified'));
+        if ($vendor->phone_verified_at == null) {
+            return $this->successResponse(200, __('auth.phone_not_verified'), [
+                'token' => null,
+            ]);
         }
         $token = JWTAuth::fromUser($vendor);
 
