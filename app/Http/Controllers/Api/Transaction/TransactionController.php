@@ -28,7 +28,7 @@ class TransactionController extends Controller
         if ($validator->fails()) {
             return $this->errorResponse(422, 'Validation errors', $validator->errors());
         }
-    
+
         if (auth()->guard('vendor')->check()) {
             $user = auth()->guard('vendor')->user();
             $model_of_sender = 'vendor'; 
@@ -38,11 +38,15 @@ class TransactionController extends Controller
         } else {
             return $this->errorResponse(401, __('word.you_are_not_authorized_to_perform_this_action'));
         }
-    
+
+        if ($request->amount > $user->balance) {
+            return $this->errorResponse(400, __('word.insufficient_balance'));
+        }
+
         try {
             $amount = $request->input('amount');
             $qrCode = Str::random(20);
-    
+
             $qrCodeRecord = QrCode::create([
                 'sender_id' => $user->id,
                 'model_of_sender' => $model_of_sender,
@@ -50,15 +54,16 @@ class TransactionController extends Controller
                 'amount' => $amount,
                 'status' => 'active', 
             ]);
-    
+
             return $this->successResponse(200, __('word.qr_code_generated_successfully'), [
                 'Qr Code' => $qrCodeRecord,
                 'Remark' => 'We will take %10 of the amount',
             ]);
         } catch (\Exception $e) {
-            return $this->errorResponse(401, __('word.something_went_wrong') . $e->getMessage());
+            return $this->errorResponse(500, __('word.something_went_wrong') . $e->getMessage());
         }
     }
+
     // convert this to web sokcet
     public function scanQrCode(Request $request)
     {

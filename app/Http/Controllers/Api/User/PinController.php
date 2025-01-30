@@ -22,10 +22,10 @@ class PinController extends Controller
         $user = auth()->user();
 
         if (!$user) {
-            return $this->errorResponse(401, __('auth.user_not_found'));
+            return $this->errorResponse(404, __('auth.user_not_found'));
         }
         if ($user->pincode) {
-            return $this->errorResponse(400, __('auth.pin_already_set'));
+            return $this->errorResponse(409, __('auth.pin_already_set'));
         }
 
         $user->pincode = $request->pin_code;
@@ -43,13 +43,13 @@ class PinController extends Controller
                 'new_pin_code' => 'required|string|min:6|confirmed',
             ]);
         } catch (\Exception $e) {
-            return $this->errorResponse(400, $e->getMessage());
+            return $this->errorResponse(422, $e->getMessage());
         }
 
         $user = auth()->user();
 
         if (!$user) {
-            return $this->errorResponse(401, __('auth.user_not_found'));
+            return $this->errorResponse(404, __('auth.user_not_found'));
         }
 
         if ($user->pincode != $request->old_pin_code) {
@@ -65,19 +65,24 @@ class PinController extends Controller
 
         return $this->successResponse(200, __('auth.pin_changed_success'), new UserResource($user));
     }
-    //verify from pin code
+    
+    // Verify PIN code
     public function UserVerifyPinCode(Request $request)
     {
         $request->validate([
             'pin_code' => 'required|string|min:6',
         ]);
+
         $user = auth()->guard('user')->user();
+        
         if (!$user) {
-            return $this->errorResponse(401, __('auth.user_not_found'));
+            return $this->errorResponse(404, __('auth.user_not_found'));
         }
+
         if ($user->pincode != $request->pin_code) {
-            return $this->errorResponse(400, __('auth.incorrect_pin'));
+            return $this->errorResponse(403, __('auth.incorrect_pin'));
         }
+        
         return $this->successResponse(200, __('auth.pin_verified_success'));
     }
 }

@@ -60,7 +60,6 @@ class AuthController extends Controller
     // Verify OTP
     public function VendorVerifyOtp(Request $request)
     {
-        // Validate user input
         $validator = Validator::make($request->all(), [
             'phone' => 'required|string',
             'phonecode' => 'required|string',
@@ -79,27 +78,20 @@ class AuthController extends Controller
             return $this->errorResponse(401, __('auth.vendor_not_found'));
         }
 
-        // Validate the OTP
         $otpService = new Otp();
-        $phone = $vendor->phone;
-        $otp = $request->otp;
-        $response = $otpService->validate($phone, $otp);
-        if ($response->status) {
-            // Mark the vendor's phone as verified
-            $vendor->phone_verified_at = Carbon::now();
-            $vendor->save();
-            Artisan::call('otp:clean');
-
-            // Generate a JWT token for the authenticated vendor
-            $token = JWTAuth::fromUser($vendor);
-
-            return $this->successResponse(200, __('auth.otp_verified'), [
-                'token' => $token,
-                'user' => new VendorResource($vendor),
-            ]);
+        if (!$otpService->validate($vendor->phone, $request->otp)->status) {
+            return $this->errorResponse(400, __('auth.invalid_otp'));
         }
 
-        return $this->errorResponse(401, __('auth.invalid_otp'));
+        $vendor->phone_verified_at = Carbon::now();
+        $vendor->save();
+        Artisan::call('otp:clean');
+
+        $token = JWTAuth::fromUser($vendor);
+        return $this->successResponse(200, __('auth.otp_verified'), [
+            'token' => $token,
+            'user' => new VendorResource($vendor),
+        ]);
     }
     // Login vendor
     public function VendorLogin(Request $request)
@@ -109,21 +101,21 @@ class AuthController extends Controller
             'phonecode' => 'required|string',
             'password' => 'required|string',
         ]);
+        
+        if ($validator->fails()) {
+            return $this->errorResponse(422, __('validation.errors'), $validator->errors());
+        }
 
         $vendor = Vendor::where('phone', $request->phone)
             ->where('phonecode', $request->phonecode)
             ->first();
 
 
-        
-        if ($validator->fails()) {
-            return $this->errorResponse(422, __('validation.errors'), $validator->errors());
-        }
 
         $credentials = $request->only('phone', 'password');
 
         if (!Auth::guard('vendor')->attempt($credentials)) {
-            return $this->errorResponse(401, __('auth.invalid_credentials'));
+            return $this->errorResponse(401, __('auth.vendor_not_found'));
         }
 
         $vendor = Auth::guard('vendor')->user();

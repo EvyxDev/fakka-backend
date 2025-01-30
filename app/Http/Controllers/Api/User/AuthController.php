@@ -80,11 +80,11 @@ class AuthController extends Controller
 
 
         if (!$user) {
-            return $this->errorResponse(401, __('auth.user_not_found'));
+            return $this->errorResponse(404, __('auth.user_not_found'));
         }
 
         if ($user->phone_verified_at == null) {
-            return $this->successResponse(200, __('auth.phone_not_verified'), [
+            return $this->successResponse(401, __('auth.phone_not_verified'), [
                 'token' => null,
             ]);
         }
@@ -110,7 +110,7 @@ class AuthController extends Controller
     public function UserLogout()
     {
         Auth::logout();
-        return $this->successResponse(200, __('auth.logout_success'));
+        return $this->successResponse(204, __('auth.logout_success'));
     }
 
     // Verify OTP
@@ -126,33 +126,25 @@ class AuthController extends Controller
             return $this->errorResponse(422, __('validation.errors'), $validator->errors());
         }
 
-        $user = User::where('phone', $request->phone)
-            ->where('phonecode', $request->phonecode)
-            ->first();
+        $user = User::where('phone', $request->phone)->where('phonecode', $request->phonecode)->first();
 
         if (!$user) {
-            return $this->errorResponse(401, __('auth.user_not_found'));
+            return $this->errorResponse(404, __('auth.user_not_found'));
         }
 
         $otpService = new Otp();
-        $phone = $user->phone;
-        $otp = $request->otp;
-        $response = $otpService->validate($phone, $otp);
+        $response = $otpService->validate($user->phone, $request->otp);
 
-        if ($response->status) {
-            $user->phone_verified_at = Carbon::now();
-            $user->save();
-            Artisan::call('otp:clean');
-
-            $token = JWTAuth::fromUser($user);
-
-            return $this->successResponse(200, __('auth.otp_verified'), [
-                'token' => $token,
-                'user' => new UserResource($user),
-            ]);
+        if (!$response->status) {
+            return $this->errorResponse(400, __('auth.invalid_otp'));
         }
 
-        return $this->errorResponse(401, __('auth.invalid_otp'));
+        $user->phone_verified_at = Carbon::now();
+        $user->save();
+        Artisan::call('otp:clean');
+
+        $token = JWTAuth::fromUser($user);
+        return $this->successResponse(200, __('auth.otp_verified'), ['token' => $token, 'user' => new UserResource($user)]);
     }
 
     // Resend OTP
@@ -175,7 +167,7 @@ class AuthController extends Controller
 
         // Check if the user exists
         if (!$user) {
-            return $this->errorResponse(401, __('auth.user_not_found'));
+            return $this->errorResponse(404, __('auth.user_not_found'));
         }
 
         // Generate and send OTP
@@ -206,7 +198,7 @@ class AuthController extends Controller
 
         // Check if the user exists
         if (!$user) {
-            return $this->errorResponse(401, __('auth.user_not_found'));
+            return $this->errorResponse(404, __('auth.user_not_found'));
         }
 
         // Generate and send OTP
@@ -235,7 +227,7 @@ class AuthController extends Controller
             ->first();
 
         if (!$user) {
-            return $this->errorResponse(401, __('auth.user_not_found'));
+            return $this->errorResponse(404, __('auth.user_not_found'));
         }
 
         $user->password = Hash::make($request->password);
@@ -258,7 +250,7 @@ class AuthController extends Controller
         $user = Auth::user();
 
         if (!$user) {
-            return $this->errorResponse(401, __('auth.user_not_found'));
+            return $this->errorResponse(404, __('auth.user_not_found'));
         }
 
         if (!Hash::check($request->old_password, $user->password)) {
