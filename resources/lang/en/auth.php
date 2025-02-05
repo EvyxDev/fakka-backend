@@ -28,4 +28,6 @@ return [
         ],
         'user_not_found' =>'User Not Found',
         'user_found' =>'User Found',
+        'pin_reset_success'=>'PIN reset successfully',
+
 ];

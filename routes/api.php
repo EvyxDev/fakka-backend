@@ -46,6 +46,9 @@ Route::get('/get-user-or-vendor', [UserAuthController::class, 'getUserOrVendor']
         Route::post('delete-account', [UserAuthController::class, 'UserDeleteAccount']);
         Route::post('verify-pin', [UserPinController::class, 'UserVerifyPinCode']);
         Route::post('Check-token',[UserAuthController::class,'UserTokenCheck']);
+        Route::post('request-pin-reset-otp', [UserPinController::class, 'UserRequestPinResetOtp']);
+        Route::post('verify-pin-reset-otp', [UserPinController::class, 'UserVerifyPinResetOtp']);
+        Route::post('reset-pin-code', [UserPinController::class, 'UserResetPinCode']);
     });
     Route::prefix('vendor')->middleware('Localization')->group(function () {
         Route::post('register', [VendorAuthController::class, 'VendorRegister']);
@@ -62,6 +65,9 @@ Route::get('/get-user-or-vendor', [UserAuthController::class, 'getUserOrVendor']
         Route::post('delete-account', [VendorAuthController::class, 'VendorDeleteAccount']);
         Route::post('verify-pin', [VendorPinController::class, 'VendorVerifyPinCode']);
         Route::post('Check-token',[VendorAuthController::class,'VendorTokenCheck']);
+        Route::post('request-pin-reset-otp', [VendorPinController::class, 'VendorRequestPinResetOtp']);
+        Route::post('verify-pin-reset-otp', [VendorPinController::class, 'VendorVerifyPinResetOtp']);
+        Route::post('reset-pin-code', [VendorPinController::class, 'VendorResetPinCode']);
     });
     Route::prefix('Transaction')->group(function () {
         Route::post('generateQrCode', [TransactionController::class, 'generateQrCode']);
