@@ -134,7 +134,7 @@ class AuthController extends Controller
 
         return $this->successResponse(200, __('auth.login_success'), [
             'token' => $token,
-            'vendor' => new VendorResource($vendor),
+            'user' => new VendorResource($vendor),
         ]);
     }
 
