@@ -110,7 +110,7 @@ class AuthController extends Controller
     public function UserLogout()
     {
         Auth::logout();
-        return $this->successResponse(204, __('auth.logout_success'));
+        return $this->successResponse(200, __('auth.logout_success'));
     }
 
     // Verify OTP

@@ -23,6 +23,7 @@ class VendorResource extends JsonResource
             'id' => $this->id ?? null,
             'name' => $this->name ?? null,
             'phone' => $this->phone ?? null,
+            'phonecode' => $this->phonecode ?? null,
             'profile_image' => $profileImageUrl,
             'business_id' => $this->business_id ?? null,
             'balance' => $this->balance ?? null,

@@ -25,6 +25,7 @@ class UserResource extends JsonResource
             'id' => $this->id ?? null,
             'name' => $this->name ?? null,
             'phone' => $this->phone ?? null,
+            'phonecode' => $this->phonecode ?? null,
             'profile_image' => $profileImageUrl,
             'balance' => $this->balance ?? null,
             'pin_code' => $isPinSet,
