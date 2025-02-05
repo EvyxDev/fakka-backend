@@ -91,7 +91,7 @@ class PinController extends Controller
     }
 
 
-    public function UserRequestPinResetOtp(Request $request)
+    public function VendorRequestPinResetOtp(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'phone' => 'required|string',
@@ -117,7 +117,7 @@ class PinController extends Controller
         return $this->successResponse(200, __('auth.otp_sent'), ['phone' => $vendor->phone]);
     }
 
-    public function UserVerifyPinResetOtp(Request $request)
+    public function VendorVerifyPinResetOtp(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'phone' => 'required|string',
@@ -148,7 +148,7 @@ class PinController extends Controller
         return $this->successResponse(200, __('auth.otp_verified'), ['phone' => $vendor->phone]);
     }
     
-    public function UserResetPinCode(Request $request)
+    public function VendorResetPinCode(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'phone' => 'required|string',
