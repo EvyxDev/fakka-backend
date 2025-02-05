@@ -22,7 +22,7 @@ class Vendor extends Authenticatable implements JWTSubject
         'password',
         'user_id',
         'balance',
-        'bussiness_id',
+        'business_id',
         'phonecode',
         'status',
     ];

@@ -121,11 +121,14 @@ class AuthController extends Controller
             ]);
         }
 
-        if (!Auth::attempt(['phone' => $request->phone, 'password' => $request->password])) {
+        if (!Hash::check($request->password, $vendor->password)) {
             return $this->errorResponse(400, __('auth.invalid_credentials'));
         }
+        
+        // if (!Auth::attempt(['phone' => $request->phone, 'password' => $request->password])) {
+        //     return $this->errorResponse(400, __('auth.invalid_credentials'));
+        // }
         $vendor = Vendor::where('phone', $request->phone)->first();
-
         if ($vendor->phone_verified_at == null) {
             return $this->errorResponse(401, __('auth.phone_not_verified'));
         }
